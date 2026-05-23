@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MOZOFLIX - Browse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400&amp;family=Syne:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#003357",
+                        "surface": "#1d100a",
+                        "secondary-fixed-dim": "#c7c4d9",
+                        "surface-container": "#2b1c16",
+                        "outline-variant": "#5a4136",
+                        "on-tertiary": "#003257",
+                        "on-surface-variant": "#e2bfb0",
+                        "secondary-fixed": "#e3e0f5",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#a04100",
+                        "surface-bright": "#46362e",
+                        "on-primary-container": "#572000",
+                        "on-secondary": "#2f2f3f",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#464556",
+                        "on-secondary-container": "#b5b3c7",
+                        "tertiary": "#9ccaff",
+                        "on-surface": "#f8ddd2",
+                        "on-primary-fixed": "#351000",
+                        "surface-container-highest": "#41312a",
+                        "outline": "#a98a7d",
+                        "background": "#1d100a",
+                        "primary": "#ffb693",
+                        "on-background": "#f8ddd2",
+                        "on-primary": "#561f00",
+                        "tertiary-fixed-dim": "#9ccaff",
+                        "tertiary-fixed": "#d0e4ff",
+                        "primary-container": "#ff6b00",
+                        "inverse-on-surface": "#3d2d26",
+                        "primary-fixed-dim": "#ffb693",
+                        "inverse-surface": "#f8ddd2",
+                        "on-secondary-fixed": "#1a1a29",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-container-high": "#362720",
+                        "secondary-container": "#464556",
+                        "surface-variant": "#41312a",
+                        "surface-dim": "#1d100a",
+                        "secondary": "#c7c4d9",
+                        "surface-container-low": "#261812",
+                        "tertiary-container": "#059eff",
+                        "surface-tint": "#ffb693",
+                        "on-tertiary-fixed": "#001d35",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#170b06",
+                        "on-tertiary-fixed-variant": "#00497b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "xl": "80px",
+                        "base": "4px",
+                        "lg": "48px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "grid_unit": "60px"
+                    },
+                    "fontFamily": {
+                        "ui-label-sm": ["Syne"],
+                        "body-sm": ["DM Sans"],
+                        "display-lg": ["Bebas Neue"],
+                        "h1": ["Bebas Neue"],
+                        "display-xl": ["Bebas Neue"],
+                        "ui-label-lg": ["Syne"],
+                        "body-lg": ["DM Sans"],
+                        "h2": ["Bebas Neue"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "ui-label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.15em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300" }],
+                        "display-lg": ["80px", { "lineHeight": "0.95", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h1": ["48px", { "lineHeight": "1.0", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "display-xl": ["120px", { "lineHeight": "0.9", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "ui-label-lg": ["16px", { "lineHeight": "1.2", "letterSpacing": "0.2em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.7", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.7", "letterSpacing": "0.01em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .noise-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            background-image: linear-gradient(to right, rgba(255,107,0,0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,107,0,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .nav-link-hover {
+            position: relative;
+        }
+        .nav-link-hover::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FF6B00;
+            transition: width 0.3s ease;
+        }
+        .nav-link-hover:hover::after {
+            width: 100%;
+        }
+        
+        .card-hover-effect {
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .card-hover-effect::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: #FF6B00;
+            transition: width 0.3s ease;
+            z-index: 10;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-4px);
+        }
+        .card-hover-effect:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen relative overflow-x-hidden selection:bg-primary-container selection:text-white">
+<div class="noise-bg"></div>
+<div class="grid-bg"></div>
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center h-[60px] px-8 w-full sticky top-0 z-50 backdrop-blur-md bg-[#0A0A18] dark:bg-[#0A0A18] shadow-[0_4px_30px_rgba(255,107,0,0.1)]">
+<div class="flex items-center gap-xl">
+<a class="text-3xl font-display-lg text-primary-container tracking-tighter" href="#">MOZOFLIX</a>
+<div class="hidden md:flex items-center gap-md">
+<a class="font-ui-label-sm text-primary-container border-b-2 border-primary-container pb-1 uppercase" href="#">Browse</a>
+<a class="font-ui-label-sm text-secondary-fixed-dim hover:text-white transition-colors uppercase nav-link-hover" href="#">Dashboard</a>
+<a class="font-ui-label-sm text-secondary-fixed-dim hover:text-white transition-colors uppercase nav-link-hover" href="#">Rewards</a>
+<a class="font-ui-label-sm text-secondary-fixed-dim hover:text-white transition-colors uppercase nav-link-hover" href="#">Leaderboard</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-high border border-outline-variant/30 text-on-surface text-sm rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all w-64 font-body-sm group-hover:border-outline-variant/60" placeholder="Search..." type="text"/>
+<div class="absolute inset-0 -z-10 bg-primary-container/0 rounded-lg blur-md group-focus-within:bg-primary-container/20 transition-all duration-500"></div>
+</div>
+<button class="bg-primary-container text-black font-ui-label-sm px-6 py-2 rounded uppercase hover:bg-primary hover:text-black transition-all duration-300 transform active:scale-95 group relative overflow-hidden">
+<span class="relative z-10">Connect Wallet</span>
+</button>
+</div>
+</nav>
+<div class="flex relative z-10 max-w-[1920px] mx-auto">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex fixed left-0 top-[60px] h-[calc(100vh-60px)] z-40 flex-col pt-8 bg-[#0F0F22] dark:bg-[#0F0F22] border-r border-primary-container/10 w-64">
+<div class="px-6 mb-8">
+<h2 class="font-display-lg text-xl text-primary-container mb-1 tracking-wider">CATEGORIES</h2>
+<p class="font-body-sm text-secondary-fixed-dim text-xs">Stacks Ecosystem</p>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 font-ui-label-sm uppercase bg-primary-container text-black rounded-r-full mr-4 pl-6 py-3 font-black transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                    Trending
+                </a>
+<a class="flex items-center gap-3 font-ui-label-sm uppercase text-secondary-fixed-dim pl-6 py-3 hover:text-white hover:bg-white/5 hover:border-l-4 hover:border-primary-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span>
+                    High Rewards
+                </a>
+<a class="flex items-center gap-3 font-ui-label-sm uppercase text-secondary-fixed-dim pl-6 py-3 hover:text-white hover:bg-white/5 hover:border-l-4 hover:border-primary-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">sports_esports</span>
+                    Gaming
+                </a>
+<a class="flex items-center gap-3 font-ui-label-sm uppercase text-secondary-fixed-dim pl-6 py-3 hover:text-white hover:bg-white/5 hover:border-l-4 hover:border-primary-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">school</span>
+                    Education
+                </a>
+<a class="flex items-center gap-3 font-ui-label-sm uppercase text-secondary-fixed-dim pl-6 py-3 hover:text-white hover:bg-white/5 hover:border-l-4 hover:border-primary-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">video_camera_front</span>
+                    Creator Hub
+                </a>
+</nav>
+<div class="p-6 border-t border-primary-container/10 mt-auto">
+<button class="w-full border border-primary-container text-primary-container font-ui-label-sm py-3 rounded uppercase hover:bg-primary-container hover:text-black transition-all duration-300">
+                    Go Pro
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 p-grid_unit min-h-screen">
+<!-- Filters Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+<div>
+<h1 class="font-h1 text-on-surface mb-2 tracking-wide uppercase">Discover Content</h1>
+<p class="font-body-md text-secondary-fixed-dim">Watch, engage, and earn STX directly to your wallet.</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex items-center gap-2 bg-surface-container border border-primary-container/30 px-4 py-2 rounded-full font-ui-label-sm text-xs hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+                        All Categories
+                    </button>
+<button class="flex items-center gap-2 bg-surface-container border border-outline-variant/30 px-4 py-2 rounded-full font-ui-label-sm text-xs text-secondary-fixed-dim hover:text-on-surface hover:border-outline-variant/60 transition-colors">
+<span class="material-symbols-outlined text-[16px]">sort</span>
+                        Latest
+                    </button>
+<button class="flex items-center gap-2 bg-surface-container border border-outline-variant/30 px-4 py-2 rounded-full font-ui-label-sm text-xs text-secondary-fixed-dim hover:text-on-surface hover:border-outline-variant/60 transition-colors">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+                        Reward Size
+                    </button>
+</div>
+</div>
+<!-- Video Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<article class="bg-[#14142E] rounded border border-primary-container/10 overflow-hidden card-hover-effect group cursor-pointer relative shadow-lg">
+<div class="relative aspect-video overflow-hidden">
+<img alt="Blockchain technology visualization" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" data-alt="A highly detailed 3D render of glowing cryptocurrency coins floating in a dark, neon-lit digital space. The lighting is dramatic, with intense orange and deep blue hues reflecting off the metallic surfaces. A subtle grid pattern overlays the background, giving a high-tech, decentralized network aesthetic. The mood is futuristic and premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlEnXmrOn4ueePMLVRBP6Qb67lCUia51juGlL9S8nz6RT_NEwD6uG4jf8P-epMTahWM2J0WbKItByQIHf5x8ACa4oLSIWBrhycNqKfQ5b5KBTAIdo2HRfv7sp6nhM822PcgQ2OnXdh2oXNcmaKtxEXEG-us4RF8BYiseAAwtkmkllKv4gZri8pk6kOdyi-VLFhJ-whP9Gb4yIabSil2aH9DGSgiwaSXhA8ZeUh4xHlqBNg8MXe80CDt-6AQYNVLgQy0zqG7SecG6sh"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A0A18] to-transparent opacity-80"></div>
+<div class="absolute top-4 right-4 bg-primary-container text-black font-ui-label-sm text-[10px] px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+                            +1.5 STX
+                        </div>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white font-ui-label-sm text-[10px] px-2 py-1 rounded border border-white/10">12:45</span>
+</div>
+</div>
+<div class="p-6 relative z-10">
+<h3 class="font-h2 text-on-surface mb-2 group-hover:text-primary-container transition-colors line-clamp-2">The Future of Stacks: Nakamoto Upgrade Explained</h3>
+<div class="flex items-center gap-3 mt-4">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+<img alt="Creator Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a young male content creator looking confidently at the camera. He is set against a dark, moody background with subtle neon lighting. The image has a cinematic, high-end editorial feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8iaGNON97VTMDYpLMknV4OI1Hs-x87pLt7JMnU8NfDk6wkk4GE6UWNIOCY_FL9Fsgo1kbkw2WQ5oabymlXUjV-afmqtPqfqCHyQKzgnopDJJ8NvPadB4AZEJTGlOntHAnUiUKas7O-y_Czukm11K1UtNsFMr9nP0R6FDHjn5Oxru_oWmczF-fw5p0YLfCbxz6Alje0cFIWyw-0vJs0j58Wx0_xxdUUTqQTkCOoJVrFfzO7TK8giVaPCRO3IMwLStHnLasLzfFUPTP"/>
+</div>
+<div>
+<p class="font-ui-label-sm text-xs text-on-surface-variant">Crypto Insights</p>
+<p class="font-body-sm text-[11px] text-secondary-fixed-dim">14K views • 2 days ago</p>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-[#14142E] rounded border border-primary-container/10 overflow-hidden card-hover-effect group cursor-pointer relative shadow-lg">
+<div class="relative aspect-video overflow-hidden">
+<img alt="Smart contract code" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" data-alt="A macro shot of computer code on a monitor, stylized with vibrant orange syntax highlighting against a deep, dark space background. The focus is sharp on a few lines of code, while the edges blur into a cinematic bokeh. The aesthetic feels highly technical, precise, and deeply ingrained in web3 development." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEMwyHKLrELgHApT0075bVJefveGXvSnAr0U71sdUvPoW_6D6MURuhit3fPWcsdvCaMRfRux-k2ixP1Ca89GlsErW9Cbetr6OOkZA_exP42LcU-baNbxdEgBoCGHPhd4ZqTuszuucTPc35ICtm6oBOvpyvZCmbmTuRWLPoxHQKhifvygO7VPtybVaEkBaZcHo0hmSisiRttE_4QkUFh7MXj0rbBrp1n2nMJyjAvd-kzGipRYbOSoCqqtvyerTSwmvVWO7nztJAcUK1"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A0A18] to-transparent opacity-80"></div>
+<div class="absolute top-4 right-4 bg-primary-container text-black font-ui-label-sm text-[10px] px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+                            +0.5 STX
+                        </div>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white font-ui-label-sm text-[10px] px-2 py-1 rounded border border-white/10">08:20</span>
+</div>
+</div>
+<div class="p-6 relative z-10">
+<h3 class="font-h2 text-on-surface mb-2 group-hover:text-primary-container transition-colors line-clamp-2">Building Clarity Smart Contracts from Scratch</h3>
+<div class="flex items-center gap-3 mt-4">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+<img alt="Creator Avatar" class="w-full h-full object-cover" data-alt="A portrait of a female developer with short hair, wearing glasses, illuminated by the glow of a monitor. The setting is dark and focused, creating a serious and professional mood. The colors are muted except for a subtle orange ambient light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRyHLB5zC22Vy6rOPeY638qBVXcaoQsglgvlKV9M0m4a6_BupvMkXSx-8CNvwHlinqvU3KDgO_7NtfPCRB789CGlSfDQPA1UhMZ8R_lDNA7scZAA1hjgmCWC7_vJP5vPmMRwCsjDj_R_wc78a5VbE35YTR1VTy4MwKbTpDf_FlRXKTmsQy8-0teCc3IkDGB96W-ZQFNXXLD7MFgyEkUu14xYwi9We26YDgw10YQcz70GylSPA2o86jNPAG1RB4FhP-8RUtL7_knYwS"/>
+</div>
+<div>
+<p class="font-ui-label-sm text-xs text-on-surface-variant">DevAcademy</p>
+<p class="font-body-sm text-[11px] text-secondary-fixed-dim">8.2K views • 5 days ago</p>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-[#14142E] rounded border border-primary-container/10 overflow-hidden card-hover-effect group cursor-pointer relative shadow-lg">
+<div class="relative aspect-video overflow-hidden">
+<img alt="Cyberpunk gaming setup" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" data-alt="A sleek, modern gaming setup bathed in moody neon lighting, predominantly deep blues and striking orange accents. A high-resolution monitor displays a futuristic landscape. The scene feels immersive and slightly grainy, like a still from a high-budget sci-fi film. The aesthetic represents elite web3 gaming." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4LhPxe9un0azTaMR8ChnAqilK9A76viw4ejVwhraZ8UsKpxoiRUUQiklG9nrAxZqXuebgPhL1pXEVJAHvHh8i_vgW3MRhKlOYxUTeJaSxZkAbiEyRkLe2HWnhKkdQZySM1U0p_N8Wrru2sbYmFLV842s45N5dkO1h8NHObF2w7M89Z6hqNropT91jl_Q-8TVUGZZFJgqeHVcJF2vaANJqdt_evtFP79rtHzDrCOk3EOThqm_Yg-mcUZ75HTQRGW7L-UT5fPEY4K9_"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A0A18] to-transparent opacity-80"></div>
+<div class="absolute top-4 right-4 bg-primary-container text-black font-ui-label-sm text-[10px] px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+                            +2.0 STX
+                        </div>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white font-ui-label-sm text-[10px] px-2 py-1 rounded border border-white/10">24:15</span>
+</div>
+</div>
+<div class="p-6 relative z-10">
+<h3 class="font-h2 text-on-surface mb-2 group-hover:text-primary-container transition-colors line-clamp-2">Top 5 Web3 Games Launching on Stacks This Month</h3>
+<div class="flex items-center gap-3 mt-4">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+<img alt="Creator Avatar" class="w-full h-full object-cover" data-alt="A portrait of an energetic male gamer wearing a premium headset, bathed in neon lighting. He looks excited and focused. The background is dark and abstract, emphasizing his face and the high-tech gear." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-RglHjOEYvrFjo2lvXVMILwgFloA-tbeyuRl2s8cqcrZEUgm3XEJLOAAyNfTv5WhWG3X2okTVFKOTU-hkCMnupfLzLzb6axBEpLZdnbw39pyXxwZUHnoeGW8enOESUSAVzRbHRjJ3m2zbXgRmoKOuENqyrEHNo-BIwSMXJDMIogN4SkpPO6I17moKRdhZ4KacAjAWd7eWVtClUo-8k069jvcsJUlY7OqW9cArcUuxIKKSsmYbkq_Q8iBiaOwqlVImVKhZU2tkIGAu"/>
+</div>
+<div>
+<p class="font-ui-label-sm text-xs text-on-surface-variant">PixelPunk</p>
+<p class="font-body-sm text-[11px] text-secondary-fixed-dim">32K views • 1 week ago</p>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- Ticker / Badge -->
+<div class="mt-grid_unit mb-12 flex justify-center">
+<div class="inline-flex items-center gap-3 bg-surface-container-high/50 backdrop-blur-sm border border-outline-variant/30 px-6 py-3 rounded-full relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary-container/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">link</span>
+<span class="font-ui-label-sm text-xs tracking-wider text-secondary-fixed-dim">VERIFIED ON STACKS <span class="mx-2 text-outline-variant">•</span> BLOCK #142,887</span>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded border border-outline-variant/30 text-secondary-fixed-dim hover:text-primary-container hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-primary-container bg-primary-container/10 text-primary-container font-ui-label-sm text-sm">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-outline-variant/30 text-secondary-fixed-dim hover:text-white hover:border-outline-variant/60 transition-colors font-ui-label-sm text-sm">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-outline-variant/30 text-secondary-fixed-dim hover:text-white hover:border-outline-variant/60 transition-colors font-ui-label-sm text-sm">3</button>
+<span class="text-secondary-fixed-dim px-2">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-outline-variant/30 text-secondary-fixed-dim hover:text-primary-container hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

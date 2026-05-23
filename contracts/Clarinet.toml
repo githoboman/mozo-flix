@@ -1,0 +1,48 @@
+[project]
+name = 'contracts'
+description = ''
+authors = []
+telemetry = true
+cache_dir = '.\.cache'
+requirements = []
+[contracts.mozoflix-admin]
+path = 'contracts/mozoflix-admin.clar'
+clarity_version = 3
+epoch = 'latest'
+
+[contracts.mozoflix-creators]
+path = 'contracts/mozoflix-creators.clar'
+clarity_version = 3
+epoch = 'latest'
+
+[contracts.mozoflix-referrals]
+path = 'contracts/mozoflix-referrals.clar'
+clarity_version = 3
+epoch = 'latest'
+
+[contracts.mozoflix-rewards]
+path = 'contracts/mozoflix-rewards.clar'
+clarity_version = 3
+epoch = 'latest'
+
+[contracts.mozoflix-rewards-v2]
+path = 'contracts/mozoflix-rewards-v2.clar'
+clarity_version = 3
+epoch = 'latest'
+
+[contracts.mozoflix-videos]
+path = 'contracts/mozoflix-videos.clar'
+clarity_version = 3
+epoch = 'latest'
+[repl.analysis]
+passes = ['check_checker']
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = false
+api_url = 'https://api.hiro.so'

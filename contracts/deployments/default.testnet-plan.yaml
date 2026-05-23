@@ -1,0 +1,53 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: mozoflix-admin
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 24860
+            path: "contracts\\mozoflix-admin.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: mozoflix-creators
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 32010
+            path: "contracts\\mozoflix-creators.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: mozoflix-referrals
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 60530
+            path: "contracts\\mozoflix-referrals.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: mozoflix-videos
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 36670
+            path: "contracts\\mozoflix-videos.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: mozoflix-rewards
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 67340
+            path: "contracts\\mozoflix-rewards.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: mozoflix-rewards-v2
+            expected-sender: ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E
+            cost: 77770
+            path: "contracts\\mozoflix-rewards-v2.clar"
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.2"

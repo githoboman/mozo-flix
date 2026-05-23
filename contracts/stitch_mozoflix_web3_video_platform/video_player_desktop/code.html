@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MOZOFLIX - Video Player</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Syne:wght@400..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#ffdbcc",
+                      "on-tertiary-container": "#003357",
+                      "surface": "#1d100a",
+                      "secondary-fixed-dim": "#c7c4d9",
+                      "surface-container": "#2b1c16",
+                      "outline-variant": "#5a4136",
+                      "on-tertiary": "#003257",
+                      "on-surface-variant": "#e2bfb0",
+                      "secondary-fixed": "#e3e0f5",
+                      "error-container": "#93000a",
+                      "error": "#ffb4ab",
+                      "inverse-primary": "#a04100",
+                      "surface-bright": "#46362e",
+                      "on-primary-container": "#572000",
+                      "on-secondary": "#2f2f3f",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#464556",
+                      "on-secondary-container": "#b5b3c7",
+                      "tertiary": "#9ccaff",
+                      "on-surface": "#f8ddd2",
+                      "on-primary-fixed": "#351000",
+                      "surface-container-highest": "#41312a",
+                      "outline": "#a98a7d",
+                      "background": "#1d100a",
+                      "primary": "#ffb693",
+                      "on-background": "#f8ddd2",
+                      "on-primary": "#561f00",
+                      "tertiary-fixed-dim": "#9ccaff",
+                      "tertiary-fixed": "#d0e4ff",
+                      "primary-container": "#ff6b00",
+                      "inverse-on-surface": "#3d2d26",
+                      "primary-fixed-dim": "#ffb693",
+                      "inverse-surface": "#f8ddd2",
+                      "on-secondary-fixed": "#1a1a29",
+                      "on-primary-fixed-variant": "#7a3000",
+                      "surface-container-high": "#362720",
+                      "secondary-container": "#464556",
+                      "surface-variant": "#41312a",
+                      "surface-dim": "#1d100a",
+                      "secondary": "#c7c4d9",
+                      "surface-container-low": "#261812",
+                      "tertiary-container": "#059eff",
+                      "surface-tint": "#ffb693",
+                      "on-tertiary-fixed": "#001d35",
+                      "on-error": "#690005",
+                      "surface-container-lowest": "#170b06",
+                      "on-tertiary-fixed-variant": "#00497b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "16px",
+                      "xl": "80px",
+                      "base": "4px",
+                      "lg": "48px",
+                      "xs": "8px",
+                      "md": "24px",
+                      "grid_unit": "60px"
+              },
+              "fontFamily": {
+                      "ui-label-sm": [
+                              "Syne"
+                      ],
+                      "body-sm": [
+                              "DM Sans"
+                      ],
+                      "display-lg": [
+                              "Bebas Neue"
+                      ],
+                      "h1": [
+                              "Bebas Neue"
+                      ],
+                      "display-xl": [
+                              "Bebas Neue"
+                      ],
+                      "ui-label-lg": [
+                              "Syne"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "h2": [
+                              "Bebas Neue"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ]
+              },
+              "fontSize": {
+                      "ui-label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.15em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "300"
+                              }
+                      ],
+                      "display-lg": [
+                              "80px",
+                              {
+                                      "lineHeight": "0.95",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-xl": [
+                              "120px",
+                              {
+                                      "lineHeight": "0.9",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "ui-label-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.2em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.7",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h2": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.7",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A18;
+            background-image: 
+                linear-gradient(rgba(255, 107, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 107, 0, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            color: #f8ddd2;
+        }
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .accent-glow {
+            background: radial-gradient(circle, rgba(255,107,0,0.15) 0%, rgba(10,10,24,0) 70%);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-body-md overflow-x-hidden">
+<div class="noise-overlay"></div>
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-[60px] px-8 w-full sticky top-0 z-50 backdrop-blur-md bg-[#0A0A18] dark:bg-[#0A0A18] docked full-width border-b border-orange-600/20 shadow-[0_4px_30px_rgba(255,107,0,0.1)]">
+<div class="text-3xl font-bebas-neue text-orange-600 dark:text-[#FF6B00] tracking-tighter">MOZOFLIX</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-syne uppercase font-bold text-xs text-orange-600 dark:text-[#FF6B00] border-b-2 border-orange-600 dark:border-[#FF6B00] pb-1 scale-95 active:scale-90 transition-transform hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300" href="#">Browse</a>
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors scale-95 active:scale-90 transition-transform hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300" href="#">Dashboard</a>
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors scale-95 active:scale-90 transition-transform hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300" href="#">Rewards</a>
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors scale-95 active:scale-90 transition-transform hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300" href="#">Leaderboard</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center gap-2 bg-[#FF6B00] text-black px-4 py-2 rounded-DEFAULT font-ui-label-sm uppercase hover:bg-orange-500 transition-colors">
+                Connect Wallet
+            </button>
+<button class="text-slate-400 hover:text-white md:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<div class="flex h-[calc(100vh-60px)] relative">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-[60px] h-full z-40 pt-8 bg-[#0F0F22] dark:bg-[#0F0F22] w-64 border-r border-orange-600/10 border-[#FF6B00]/12">
+<div class="px-6 mb-8">
+<h2 class="font-bebas-neue text-xl text-orange-600 dark:text-[#FF6B00]">CATEGORIES</h2>
+<p class="font-syne text-xs text-slate-500 uppercase tracking-widest mt-1">Stacks Ecosystem</p>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-4 text-slate-400 pl-6 py-3 hover:text-white font-syne font-bold uppercase tracking-tight hover:bg-white/5 hover:border-l-4 hover:border-orange-600 transition-all" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+                    Trending
+                </a>
+<a class="flex items-center gap-4 text-slate-400 pl-6 py-3 hover:text-white font-syne font-bold uppercase tracking-tight hover:bg-white/5 hover:border-l-4 hover:border-orange-600 transition-all" href="#">
+<span class="material-symbols-outlined">monetization_on</span>
+                    High Rewards
+                </a>
+<a class="flex items-center gap-4 bg-[#FF6B00] text-black rounded-r-full mr-4 pl-6 py-3 font-black font-syne uppercase tracking-tight translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">sports_esports</span>
+                    Gaming
+                </a>
+<a class="flex items-center gap-4 text-slate-400 pl-6 py-3 hover:text-white font-syne font-bold uppercase tracking-tight hover:bg-white/5 hover:border-l-4 hover:border-orange-600 transition-all" href="#">
+<span class="material-symbols-outlined">school</span>
+                    Education
+                </a>
+<a class="flex items-center gap-4 text-slate-400 pl-6 py-3 hover:text-white font-syne font-bold uppercase tracking-tight hover:bg-white/5 hover:border-l-4 hover:border-orange-600 transition-all" href="#">
+<span class="material-symbols-outlined">video_camera_front</span>
+                    Creator Hub
+                </a>
+</nav>
+<div class="p-6 mt-auto">
+<button class="w-full border border-[#FF6B00]/30 text-[#FF6B00] py-3 rounded-DEFAULT font-ui-label-sm uppercase hover:bg-[#FF6B00]/10 transition-colors">
+                    Go Pro
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 relative overflow-y-auto">
+<div class="accent-glow absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] pointer-events-none z-0"></div>
+<div class="p-8 lg:p-grid_unit max-w-[1600px] mx-auto relative z-10">
+<!-- Layout Grid -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Player & Meta (8 cols) -->
+<div class="col-span-12 xl:col-span-8 flex flex-col gap-8">
+<!-- Video Player Container -->
+<div class="relative w-full aspect-video bg-[#0F0F22] rounded-xl border border-orange-600/20 overflow-hidden shadow-[0_0_40px_rgba(255,107,0,0.15)] group">
+<!-- Simulated Video Frame -->
+<img alt="Esports Tournament Stage" class="w-full h-full object-cover opacity-80 mix-blend-luminosity" data-alt="A high-contrast cinematic shot of an esports tournament stage, bathed in deep blues and striking orange spotlights, reflecting the Web3-native aesthetic. The lighting is dramatic, casting intense silhouettes against massive glowing screens in a dark, cavernous arena setting. The mood is high-stakes and electrifying, emphasizing the competitive gaming ecosystem within a premium digital environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArnR1XBsT-PswZ8GHQlxwjsIgkPwvUfMujvSwXSmxbsfJYEAXTss3_H4qAiRrW4wQZVnNwV6x9T3NY_d-bhjMHSZafXrfIN4TLC1P3oULasQOXDM9yS5Ciu3JLsLYV8OK6OmP8O-AxxsKEeNZ3XQoTv5H2PWzkeTIZx5KS87aCVirmWD5fZDhH-GWCDvTOHPUCEsg6CCKBDVxD0MPWP2WaScs8AQnj1w9zvtLUnSzji-Ez0Z7lYvJR76m-D3S7psBzrkNdP1_W2CHC"/>
+<!-- Player Controls Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 flex flex-col justify-between p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<div class="flex justify-between items-start">
+<div class="bg-black/50 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 font-ui-label-sm text-white uppercase flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                        LIVE
+                                    </div>
+<div class="flex gap-4">
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined">share</span></button>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Progress Bar -->
+<div class="w-full h-2 bg-white/20 rounded-full overflow-hidden relative cursor-pointer group/bar">
+<!-- Unlocked segment marker (70%) -->
+<div class="absolute left-[70%] top-0 bottom-0 w-px bg-white/50 z-20"></div>
+<!-- Active Progress -->
+<div class="h-full w-[72%] bg-gradient-to-r from-orange-600 to-[#FF6B00] relative z-10 shadow-[0_0_10px_rgba(255,107,0,0.8)]">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full scale-0 group-hover/bar:scale-100 transition-transform"></div>
+</div>
+</div>
+<!-- Controls Row -->
+<div class="flex justify-between items-center text-white">
+<div class="flex items-center gap-6">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pause</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span></button>
+<span class="font-body-sm text-slate-300">45:12 / 1:02:40</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">subtitles</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Video Meta & Creator Card -->
+<div class="flex flex-col md:flex-row gap-6 justify-between items-start">
+<div class="flex-1">
+<h1 class="font-h1 text-on-background mb-2">The Future of Decentralized Gaming</h1>
+<p class="font-body-md text-slate-400 max-w-2xl">Exploring the impact of smart contracts on competitive esports and how player-owned assets are revolutionizing the ecosystem.</p>
+</div>
+<!-- Creator Card (Glassmorphism) -->
+<div class="bg-[#14142E]/80 backdrop-blur-md border border-orange-600/12 rounded-xl p-6 min-w-[300px] relative group overflow-hidden">
+<div class="absolute bottom-0 left-0 w-0 h-[3px] bg-primary-container group-hover:w-full transition-all duration-500"></div>
+<div class="flex items-center gap-4 mb-6">
+<img alt="Creator Avatar" class="w-16 h-16 rounded-full border-2 border-primary-container object-cover" data-alt="A portrait of a male content creator in a dimly lit studio setting. The lighting features a strong rim light in vibrant orange, creating a cyberpunk, Web3 aesthetic against a dark, moody background. The subject appears focused and professional, embodying the premium, authoritative tone of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvVT_y-kJ4v1YUvdwzxHO-ZhkdS6S9G5aol6ANw2WsNPOgcc-OjF16otDLvUgDNfAoFS-jrNzfNgzmrOSy67l0gzy0mdEiH4lkmwdC9NcosyPm0WBiLIPPIpK5wIai33Q-RDRmS5D6JyHu2hrkztOHjFkPx6o0RZ6k0fz5gOdnjx_0b0VAQrTKqAbmHlhCR_wXTyusLhFQGzambZgzCzsRQRdaarx-4eDwvDFh4_AgJI1aMK_Nrs7GHKrS2gaQnwwoXlqCN8tnqiCL"/>
+<div>
+<h3 class="font-ui-label-lg text-on-background uppercase">Alex Vance</h3>
+<p class="font-ui-label-sm text-primary uppercase mt-1">Pro Tier Creator</p>
+</div>
+<button class="ml-auto bg-white/5 border border-white/10 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-primary-container hover:border-primary-container transition-all">
+<span class="material-symbols-outlined">person_add</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-[#0F0F22] p-3 rounded-lg border border-white/5">
+<div class="font-ui-label-sm text-slate-500 uppercase mb-1">Total Viewers</div>
+<div class="font-display-lg text-4xl text-on-background">12.4K</div>
+</div>
+<div class="bg-[#0F0F22] p-3 rounded-lg border border-white/5">
+<div class="font-ui-label-sm text-slate-500 uppercase mb-1">STX Earned</div>
+<div class="font-display-lg text-4xl text-primary-container">845</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Live Event Log (4 cols) -->
+<div class="col-span-12 xl:col-span-4 flex flex-col h-full">
+<div class="bg-[#14142E] rounded-xl border border-orange-600/12 flex flex-col h-[calc(100vh-200px)] sticky top-[100px]">
+<!-- Header -->
+<div class="p-6 border-b border-white/10 flex justify-between items-center bg-[#0F0F22] rounded-t-xl">
+<h3 class="font-h2 text-xl text-on-background m-0">LIVE REWARD LOG</h3>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="font-ui-label-sm text-slate-400 uppercase">On-Chain Sync</span>
+</div>
+</div>
+<!-- Scrollable Events List -->
+<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
+<!-- Event Item: Reward Unlocked -->
+<div class="bg-[#16162E] border border-primary-container/30 p-4 rounded-lg flex items-start gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 w-1 h-full bg-primary-container shadow-[0_0_10px_rgba(255,107,0,0.8)]"></div>
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">monetization_on</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-ui-label-sm text-on-background uppercase">Watch Milestone (70%)</span>
+<span class="font-ui-label-sm text-primary-container">+$5.00 STX</span>
+</div>
+<p class="font-body-sm text-slate-400 text-xs">Tx: 0x4f...a9b2 verified</p>
+</div>
+</div>
+<!-- Event Item: Standard -->
+<div class="bg-[#0F0F22] border border-white/5 p-4 rounded-lg flex items-start gap-4 hover:border-white/20 transition-colors">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-slate-400">chat_bubble</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-ui-label-sm text-slate-300 uppercase">User0x99 tipped</span>
+<span class="font-ui-label-sm text-slate-400">+$1.50 STX</span>
+</div>
+<p class="font-body-sm text-slate-500 text-xs">"Great breakdown!"</p>
+</div>
+</div>
+<!-- Event Item: Standard -->
+<div class="bg-[#0F0F22] border border-white/5 p-4 rounded-lg flex items-start gap-4 hover:border-white/20 transition-colors">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-slate-400">person_add</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-ui-label-sm text-slate-300 uppercase">New Subscriber</span>
+</div>
+<p class="font-body-sm text-slate-500 text-xs">CryptoNinja joined the tier</p>
+</div>
+</div>
+<!-- Event Item: Standard -->
+<div class="bg-[#0F0F22] border border-white/5 p-4 rounded-lg flex items-start gap-4 hover:border-white/20 transition-colors">
+<div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-slate-400">chat_bubble</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-ui-label-sm text-slate-300 uppercase">SatoshiFan tipped</span>
+<span class="font-ui-label-sm text-slate-400">+$10.00 STX</span>
+</div>
+<p class="font-body-sm text-slate-500 text-xs">"Bullish on this game."</p>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-4 border-t border-white/10 bg-[#0F0F22] rounded-b-xl">
+<div class="relative group">
+<input class="w-full bg-[#1A1A32] border border-white/10 rounded-lg py-3 px-4 text-white font-ui-label-sm placeholder-slate-500 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="SEND A TIP OR MESSAGE..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary-container hover:text-orange-400 p-2">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Toast Notification (Absolute positioned within main) -->
+<div class="fixed bottom-8 right-8 z-50 bg-[#14142E] border border-primary-container/50 shadow-[0_10px_40px_rgba(255,107,0,0.2)] rounded-lg p-4 flex items-center gap-4 max-w-sm border-l-4 border-l-primary-container">
+<div class="w-12 h-12 bg-primary-container/20 rounded-full flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div>
+<h4 class="font-ui-label-lg text-white uppercase mb-1">Reward Unlocked</h4>
+<p class="font-body-sm text-slate-300">You've reached 70% watch time. +5 STX added to your wallet.</p>
+</div>
+<button class="text-slate-400 hover:text-white ml-auto">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</main>
+</div>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 0, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 0, 0.4);
+        }
+    </style>
+</body></html>

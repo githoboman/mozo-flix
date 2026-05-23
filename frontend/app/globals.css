@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0a0a18;
+  color: #ffffff;
+  font-family: var(--font-dm-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a18;
+}
+::-webkit-scrollbar-thumb {
+  background: #ff6b00;
+  border-radius: 2px;
+}
+
+::selection {
+  background: #ff6b00;
+  color: #000;
+}
+
+/* Cinematic Futurist motifs --------------------------------------------- */
+.noise-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.grid-bg::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 107, 0, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(255, 107, 0, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Reveal-on-hover orange underline (Cinematic Futurist signature) */
+.reveal-underline {
+  position: relative;
+}
+.reveal-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: #ff6b00;
+  transition: width 0.3s ease;
+}
+.reveal-underline:hover::after {
+  width: 100%;
+}
+
+.card-reveal {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+.card-reveal::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 3px;
+  background: #ff6b00;
+  transition: width 0.3s ease;
+  z-index: 10;
+}
+.card-reveal:hover {
+  transform: translateY(-4px);
+}
+.card-reveal:hover::after {
+  width: 100%;
+}
+
+/* Hero glow keyframes */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.1); }
+}
+.animate-pulse-glow { animation: pulse-glow 6s ease-in-out infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.2; }
+}
+.animate-blink { animation: blink 2s ease-in-out infinite; }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-ticker { animation: ticker 22s linear infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.7s ease both; }
+
+/* ===== Motion polish ===================================================== */
+
+/* Soft fade-in (no translate) */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.5s ease both; }
+
+/* Quick scale + fade for modals + popovers */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-scale-in { animation: scale-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Subtle press feedback for any clickable */
+.press-feedback {
+  transition: transform 0.12s ease-out, filter 0.15s ease;
+}
+.press-feedback:active {
+  transform: scale(0.97);
+  filter: brightness(1.05);
+}
+
+/* Shimmer skeleton — replaces the dull `animate-pulse` for richer feedback */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Stagger entrance: applies fade-up with an index-based delay.
+   Add `.stagger-children > *:nth-child(N)` automatically delays children. */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2)  { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3)  { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 340ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 380ms; }
+.stagger-children > *:nth-child(9)  { animation-delay: 420ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 460ms; }
+.stagger-children > *:nth-child(n+11) { animation-delay: 500ms; }
+
+/* Scroll-revealed sections — paired with the useInView hook */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect prefers-reduced-motion — turn off non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-pulse-glow,
+  .animate-ticker,
+  .animate-shimmer,
+  .stagger-children > *,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

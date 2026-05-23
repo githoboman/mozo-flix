@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Viewer Earnings Dashboard - MOZOFLIX</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400&amp;family=Syne:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#003357",
+                        "surface": "#1d100a",
+                        "secondary-fixed-dim": "#c7c4d9",
+                        "surface-container": "#2b1c16",
+                        "outline-variant": "#5a4136",
+                        "on-tertiary": "#003257",
+                        "on-surface-variant": "#e2bfb0",
+                        "secondary-fixed": "#e3e0f5",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#a04100",
+                        "surface-bright": "#46362e",
+                        "on-primary-container": "#572000",
+                        "on-secondary": "#2f2f3f",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#464556",
+                        "on-secondary-container": "#b5b3c7",
+                        "tertiary": "#9ccaff",
+                        "on-surface": "#f8ddd2",
+                        "on-primary-fixed": "#351000",
+                        "surface-container-highest": "#41312a",
+                        "outline": "#a98a7d",
+                        "background": "#1d100a",
+                        "primary": "#ffb693",
+                        "on-background": "#f8ddd2",
+                        "on-primary": "#561f00",
+                        "tertiary-fixed-dim": "#9ccaff",
+                        "tertiary-fixed": "#d0e4ff",
+                        "primary-container": "#ff6b00",
+                        "inverse-on-surface": "#3d2d26",
+                        "primary-fixed-dim": "#ffb693",
+                        "inverse-surface": "#f8ddd2",
+                        "on-secondary-fixed": "#1a1a29",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-container-high": "#362720",
+                        "secondary-container": "#464556",
+                        "surface-variant": "#41312a",
+                        "surface-dim": "#1d100a",
+                        "secondary": "#c7c4d9",
+                        "surface-container-low": "#261812",
+                        "tertiary-container": "#059eff",
+                        "surface-tint": "#ffb693",
+                        "on-tertiary-fixed": "#001d35",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#170b06",
+                        "on-tertiary-fixed-variant": "#00497b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "xl": "80px",
+                        "base": "4px",
+                        "lg": "48px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "grid_unit": "60px"
+                    },
+                    "fontFamily": {
+                        "ui-label-sm": ["Syne"],
+                        "body-sm": ["DM Sans"],
+                        "display-lg": ["Bebas Neue"],
+                        "h1": ["Bebas Neue"],
+                        "display-xl": ["Bebas Neue"],
+                        "ui-label-lg": ["Syne"],
+                        "body-lg": ["DM Sans"],
+                        "h2": ["Bebas Neue"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "ui-label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.15em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300" }],
+                        "display-lg": ["80px", { "lineHeight": "0.95", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h1": ["48px", { "lineHeight": "1.0", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "display-xl": ["120px", { "lineHeight": "0.9", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "ui-label-lg": ["16px", { "lineHeight": "1.2", "letterSpacing": "0.2em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.7", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.7", "letterSpacing": "0.01em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A18;
+            background-image: 
+                linear-gradient(rgba(255,107,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,107,0,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-position: center top;
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.05"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 30px rgba(255, 107, 0, 0.35);
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
+        }
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body class="text-on-background min-h-screen flex flex-col font-body-md">
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center h-[60px] px-8 w-full sticky top-0 z-50 backdrop-blur-md bg-[#0A0A18] dark:bg-[#0A0A18] border-b border-orange-600/20 shadow-[0_4px_30px_rgba(255,107,0,0.1)] border-b border-white/10">
+<div class="flex items-center gap-md">
+<span class="text-3xl font-bebas-neue text-orange-600 dark:text-[#FF6B00] tracking-tighter">MOZOFLIX</span>
+<div class="hidden md:flex gap-lg ml-xl">
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Browse</a>
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Dashboard</a>
+<a class="font-syne uppercase font-bold text-xs text-orange-600 dark:text-[#FF6B00] border-b-2 border-orange-600 dark:border-[#FF6B00] pb-1 hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Rewards</a>
+<a class="font-syne uppercase font-bold text-xs text-slate-400 dark:text-slate-500 hover:text-white transition-colors hover:text-orange-500 dark:hover:text-[#FF6B00] hover:bg-white/5 transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Leaderboard</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="bg-primary-container text-black font-ui-label-sm uppercase px-sm py-xs rounded hover:bg-primary-fixed hover:shadow-[0_4px_0_0_rgba(255,107,0,1)] transition-all">Connect Wallet</button>
+</div>
+</nav>
+<!-- Ticker-Tape Band -->
+<div class="w-full bg-primary-container text-black py-xs overflow-hidden border-y border-orange-600/30 marquee-container">
+<div class="marquee-content font-ui-label-sm uppercase tracking-widest flex gap-xl">
+<span>NETWORK HASH RATE: 14.2 EH/S</span>
+<span>MOZO TOKEN: $2.41</span>
+<span>NEXT REWARD EPOCH: 04:12:33</span>
+<span>LIVE: 14,231 VIEWERS EARNING</span>
+<span>NETWORK HASH RATE: 14.2 EH/S</span>
+<span>MOZO TOKEN: $2.41</span>
+<span>NEXT REWARD EPOCH: 04:12:33</span>
+<span>LIVE: 14,231 VIEWERS EARNING</span>
+</div>
+</div>
+<main class="flex-grow grid grid-cols-12 gap-grid_unit px-grid_unit py-grid_unit w-full max-w-[1920px] mx-auto relative z-10">
+<!-- Hero Stats Section -->
+<section class="col-span-12 lg:col-span-8 flex flex-col justify-end min-h-[409px] pb-xl relative">
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary-container/10 via-transparent to-transparent pointer-events-none"></div>
+<h1 class="font-h1 text-h1 text-on-surface mb-md">VIEWER EARNINGS</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-grid_unit mt-md">
+<div class="bg-[#0F0F22] border border-orange-600/12 p-lg relative group overflow-hidden">
+<div class="absolute inset-0 bg-primary-container/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<p class="font-ui-label-sm text-ui-label-sm text-secondary uppercase mb-sm relative z-10">Total Earned</p>
+<p class="font-display-lg text-display-lg text-primary-fixed text-glow relative z-10">4,291.50</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs relative z-10">MOZO Tokens</p>
+</div>
+<div class="bg-[#0F0F22] border border-orange-600/12 p-lg relative group overflow-hidden">
+<div class="absolute inset-0 bg-primary-container/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<p class="font-ui-label-sm text-ui-label-sm text-secondary uppercase mb-sm relative z-10">Withdrawable Balance</p>
+<p class="font-display-lg text-display-lg text-primary text-glow relative z-10">1,050.25</p>
+<div class="mt-md relative z-10">
+<button class="w-full bg-primary-container text-black font-ui-label-sm text-ui-label-sm uppercase py-sm rounded hover:bg-primary-fixed hover:shadow-[0_4px_0_0_rgba(255,107,0,1)] hover:-translate-y-1 transition-all duration-300">
+                            Withdraw to Wallet
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Sidebar Activity / Promo -->
+<aside class="col-span-12 lg:col-span-4 flex flex-col gap-grid_unit pt-grid_unit lg:pt-0">
+<div class="bg-[#14142E] border border-orange-600/12 p-md relative overflow-hidden group">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&amp;w=2564&amp;auto=format&amp;fit=crop')] bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-700" data-alt="A striking digital installation art piece featuring glowing, generative geometric shapes suspended in a vast, minimalist gallery space. The room is illuminated by high-key, soft white lighting that creates a bright, modern light-mode aesthetic. The artwork relies on a sophisticated palette of deep blacks and pristine whites, punctuated by intense accents of vibrant red. The mood is serene yet technologically advanced."></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#14142E] to-transparent"></div>
+<div class="relative z-10 h-full flex flex-col justify-end pt-xl">
+<span class="font-ui-label-sm text-ui-label-sm text-primary-container uppercase mb-xs flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">local_fire_department</span> Active Multiplier</span>
+<h3 class="font-h2 text-h2 text-on-surface mb-sm">2.5X EARNING RATE</h3>
+<p class="font-body-sm text-body-sm text-secondary mb-md">Watch 3 more hours this week to unlock the 3X tier.</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[65%]"></div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-0 h-[3px] bg-primary-container group-hover:w-full transition-all duration-500"></div>
+</div>
+</aside>
+<!-- Watch History Table -->
+<section class="col-span-12">
+<div class="flex justify-between items-end mb-lg border-b border-orange-600/12 pb-sm">
+<h2 class="font-h2 text-h2 text-on-surface">Recent Earnings</h2>
+<a class="font-ui-label-sm text-ui-label-sm text-primary-container uppercase hover:text-primary-fixed transition-colors flex items-center gap-1" href="#">View Full History <span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>
+</div>
+<div class="bg-[#0F0F22] border border-orange-600/12 overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-orange-600/12 bg-white/5">
+<th class="py-md px-md font-ui-label-sm text-ui-label-sm text-secondary uppercase">Content Watched</th>
+<th class="py-md px-md font-ui-label-sm text-ui-label-sm text-secondary uppercase hidden md:table-cell">Duration</th>
+<th class="py-md px-md font-ui-label-sm text-ui-label-sm text-secondary uppercase">Earned</th>
+<th class="py-md px-md font-ui-label-sm text-ui-label-sm text-secondary uppercase text-right">Transaction</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface-variant">
+<tr class="border-b border-orange-600/12 hover:bg-white/5 transition-colors group">
+<td class="py-md px-md">
+<div class="font-bold text-on-surface">Cyberpunk Origins Ep 4</div>
+<div class="font-body-sm text-body-sm text-secondary">Sci-Fi Series</div>
+</td>
+<td class="py-md px-md hidden md:table-cell">45 mins</td>
+<td class="py-md px-md text-primary-fixed font-bold">+ 12.50 MOZO</td>
+<td class="py-md px-md text-right">
+<a class="text-primary-container hover:text-primary-fixed flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity" href="#">
+<span class="font-ui-label-sm text-ui-label-sm">0x8f...3a2b</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</td>
+</tr>
+<tr class="border-b border-orange-600/12 hover:bg-white/5 transition-colors group">
+<td class="py-md px-md">
+<div class="font-bold text-on-surface">Web3 Architecture Deep Dive</div>
+<div class="font-body-sm text-body-sm text-secondary">Educational</div>
+</td>
+<td class="py-md px-md hidden md:table-cell">1h 20m</td>
+<td class="py-md px-md text-primary-fixed font-bold">+ 24.00 MOZO</td>
+<td class="py-md px-md text-right">
+<a class="text-primary-container hover:text-primary-fixed flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity" href="#">
+<span class="font-ui-label-sm text-ui-label-sm">0x1c...9d4e</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="py-md px-md">
+<div class="font-bold text-on-surface">The Block Matrix Movie</div>
+<div class="font-body-sm text-body-sm text-secondary">Feature Film</div>
+</td>
+<td class="py-md px-md hidden md:table-cell">2h 15m</td>
+<td class="py-md px-md text-primary-fixed font-bold">+ 45.25 MOZO</td>
+<td class="py-md px-md text-right">
+<a class="text-primary-container hover:text-primary-fixed flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity" href="#">
+<span class="font-ui-label-sm text-ui-label-sm">0x4a...7f1c</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</body></html>

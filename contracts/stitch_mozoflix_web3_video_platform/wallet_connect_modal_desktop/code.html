@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MOZOFLIX - Connect Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&amp;family=Syne:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#003357",
+                        "surface": "#1d100a",
+                        "secondary-fixed-dim": "#c7c4d9",
+                        "surface-container": "#2b1c16",
+                        "outline-variant": "#5a4136",
+                        "on-tertiary": "#003257",
+                        "on-surface-variant": "#e2bfb0",
+                        "secondary-fixed": "#e3e0f5",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#a04100",
+                        "surface-bright": "#46362e",
+                        "on-primary-container": "#572000",
+                        "on-secondary": "#2f2f3f",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#464556",
+                        "on-secondary-container": "#b5b3c7",
+                        "tertiary": "#9ccaff",
+                        "on-surface": "#f8ddd2",
+                        "on-primary-fixed": "#351000",
+                        "surface-container-highest": "#41312a",
+                        "outline": "#a98a7d",
+                        "background": "#1d100a",
+                        "primary": "#ffb693",
+                        "on-background": "#f8ddd2",
+                        "on-primary": "#561f00",
+                        "tertiary-fixed-dim": "#9ccaff",
+                        "tertiary-fixed": "#d0e4ff",
+                        "primary-container": "#ff6b00",
+                        "inverse-on-surface": "#3d2d26",
+                        "primary-fixed-dim": "#ffb693",
+                        "inverse-surface": "#f8ddd2",
+                        "on-secondary-fixed": "#1a1a29",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-container-high": "#362720",
+                        "secondary-container": "#464556",
+                        "surface-variant": "#41312a",
+                        "surface-dim": "#1d100a",
+                        "secondary": "#c7c4d9",
+                        "surface-container-low": "#261812",
+                        "tertiary-container": "#059eff",
+                        "surface-tint": "#ffb693",
+                        "on-tertiary-fixed": "#001d35",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#170b06",
+                        "on-tertiary-fixed-variant": "#00497b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "xl": "80px",
+                        "base": "4px",
+                        "lg": "48px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "grid_unit": "60px"
+                    },
+                    "fontFamily": {
+                        "ui-label-sm": ["Syne"],
+                        "body-sm": ["DM Sans"],
+                        "display-lg": ["Bebas Neue"],
+                        "h1": ["Bebas Neue"],
+                        "display-xl": ["Bebas Neue"],
+                        "ui-label-lg": ["Syne"],
+                        "body-lg": ["DM Sans"],
+                        "h2": ["Bebas Neue"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "ui-label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.15em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300" }],
+                        "display-lg": ["80px", { "lineHeight": "0.95", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h1": ["48px", { "lineHeight": "1.0", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "display-xl": ["120px", { "lineHeight": "0.9", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "ui-label-lg": ["16px", { "lineHeight": "1.2", "letterSpacing": "0.2em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.7", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.7", "letterSpacing": "0.01em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A18; /* From Brand Guidelines Base Layer */
+            background-image: 
+                linear-gradient(rgba(255, 107, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 107, 0, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px; /* grid_unit */
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.05"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 0;
+        }
+        .accent-glow {
+            box-shadow: 0 0 40px rgba(255, 107, 0, 0.15);
+        }
+        .wallet-card-hover:hover {
+            border-bottom: 3px solid #ff6b00;
+            background-color: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 0 20px rgba(255, 107, 0, 0.05);
+        }
+        .glass-panel {
+            background: rgba(15, 15, 34, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 107, 0, 0.12);
+        }
+        /* Simulated Background Video Elements */
+        .bg-element {
+            position: absolute;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="text-on-background min-h-screen flex items-center justify-center overflow-hidden font-body-md">
+<!-- Simulated Video Background (Blurred for Modal Focus) -->
+<div class="fixed inset-0 z-0 bg-element bg-cover bg-center" data-alt="A highly blurred, cinematic shot of a futuristic cyberpunk cityscape at night, heavily obscured to serve as a background layer. Neon orange and deep blue lights smear across the frame, indicating motion and high-energy digital activity. The atmosphere is dark, moody, and deeply immersive, fitting a high-end Web3 cinematic streaming platform's aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBFIdm7EiB-n1Wu8wm1qyZoMCyimDZcPKbCJp1fnCwZtFs-Fhc7C8Re8RjpLwtLtd2SpE-4HsP1a_ySsOoQsxmO-aubomTo-pJ3XVHnTrvPMkiOVpjrl85XvSdumJrKDOoQcl78EbNZ0xTHOD_-ZdRm9TBJVJRFXZJgCmnoZSr00PGST5eJhGVw4PbiBM1eInL_YdUU7Z7OJqIOu-QMb_Oi45giz-NCT7A5_vdrupuG7xK0jOxgv3TiTwtwC2R1OIoCJk2UZ1XjXXBg');"></div>
+<!-- Dark Modal Overlay -->
+<div class="fixed inset-0 bg-black/80 z-10 flex items-center justify-center p-md backdrop-blur-sm">
+<!-- Modal Container -->
+<div class="glass-panel w-full max-w-[480px] p-lg rounded-xl relative z-20 flex flex-col gap-md accent-glow">
+<!-- Close Button -->
+<button aria-label="Close modal" class="absolute top-md right-md text-secondary hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+<!-- Header -->
+<div class="text-center mb-sm">
+<h2 class="font-h2 text-h2 text-on-surface mb-xs tracking-wide">CONNECT WALLET</h2>
+<p class="font-body-sm text-body-sm text-secondary">Select a wallet to authenticate your access to the Stacks Ecosystem.</p>
+</div>
+<!-- Wallet Options -->
+<div class="flex flex-col gap-sm">
+<!-- Leather Wallet Option -->
+<button class="wallet-card-hover group flex items-center justify-between p-sm bg-[#14142E] rounded border border-[rgba(255,107,0,0.05)] transition-all duration-300">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center border border-outline-variant group-hover:border-primary/50 transition-colors">
+<!-- Placeholder icon for Leather -->
+<span class="material-symbols-outlined text-[28px] text-on-surface">account_balance_wallet</span>
+</div>
+<div class="text-left">
+<span class="block font-ui-label-lg text-ui-label-lg text-on-surface uppercase tracking-wider">Leather</span>
+<span class="block font-body-sm text-body-sm text-secondary">Web extension &amp; Desktop</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<!-- Xverse Wallet Option -->
+<button class="wallet-card-hover group flex items-center justify-between p-sm bg-[#14142E] rounded border border-[rgba(255,107,0,0.05)] transition-all duration-300">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center border border-outline-variant group-hover:border-primary/50 transition-colors">
+<!-- Placeholder icon for Xverse -->
+<span class="material-symbols-outlined text-[28px] text-on-surface">public</span>
+</div>
+<div class="text-left">
+<span class="block font-ui-label-lg text-ui-label-lg text-on-surface uppercase tracking-wider">Xverse</span>
+<span class="block font-body-sm text-body-sm text-secondary">Web extension &amp; Mobile</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<!-- Boom Wallet Option -->
+<button class="wallet-card-hover group flex items-center justify-between p-sm bg-[#14142E] rounded border border-[rgba(255,107,0,0.05)] transition-all duration-300">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center border border-outline-variant group-hover:border-primary/50 transition-colors">
+<!-- Placeholder icon for Boom -->
+<span class="material-symbols-outlined text-[28px] text-on-surface">bolt</span>
+</div>
+<div class="text-left">
+<span class="block font-ui-label-lg text-ui-label-lg text-on-surface uppercase tracking-wider">Boom</span>
+<span class="block font-body-sm text-body-sm text-secondary">Web wallet</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+</div>
+<!-- Footer Notes -->
+<div class="mt-sm text-center">
+<p class="font-body-sm text-body-sm text-outline">New to Stacks? <a class="text-primary hover:text-primary-fixed underline decoration-primary/30 hover:decoration-primary transition-colors" href="#">Learn more about wallets</a></p>
+</div>
+</div>
+</div>
+</body></html>
