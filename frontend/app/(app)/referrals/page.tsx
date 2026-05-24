@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { useEffect, useState } from "react";
 import { useWallet } from "@/lib/useWallet";
 import { useSearchParams } from "next/navigation";
@@ -26,7 +25,6 @@ export default function ReferralsPage() {
 function ReferralsFallback() {
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[800px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[100px]">
         <div className="text-muted">Loading…</div>
       </main>
@@ -106,7 +104,6 @@ function ReferralsInner() {
 
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[800px] px-6 pb-24 pt-[100px] md:px-12">
         <div className="mb-2 flex items-center gap-3 font-ui text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
           <span className="block h-0.5 w-8 bg-accent" />

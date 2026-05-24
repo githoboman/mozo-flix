@@ -179,24 +179,42 @@ export async function getNextVideoId(): Promise<number> {
 }
 
 /**
- * List all videos by walking IDs 1..total. We do these sequentially with a
- * tiny delay because Hiro's public testnet RPC rate-limits aggressive
- * parallel reads from the same IP.
+ * List all videos by walking IDs 1..total.
+ *
+ * We fetch in parallel batches (concurrency cap) instead of fully sequentially.
+ * Fully parallel hammers Hiro's public RPC and gets rate-limited; fully serial
+ * means ~600ms per video. A small fixed concurrency is the sweet spot —
+ * roughly N/CONCURRENCY × per-call latency.
  */
+const LIST_CONCURRENCY = 5;
+
 export async function listVideos(): Promise<VideoMeta[]> {
   const total = await getTotalVideos();
-  const videos: VideoMeta[] = [];
-  for (let id = 1; id <= total; id++) {
-    try {
-      const v = await getVideo(id);
-      if (v) videos.push(v);
-    } catch (e) {
-      console.warn(`listVideos: skipping #${id}:`, (e as Error).message);
+  if (total <= 0) return [];
+
+  const ids = Array.from({ length: total }, (_, i) => i + 1);
+  const out: VideoMeta[] = [];
+  let cursor = 0;
+
+  async function worker() {
+    while (cursor < ids.length) {
+      const id = ids[cursor++];
+      try {
+        const v = await getVideo(id!);
+        if (v) out.push(v);
+      } catch (e) {
+        console.warn(`listVideos: skipping #${id}:`, (e as Error).message);
+      }
     }
-    // Tiny gap to be a polite client
-    if (id < total) await new Promise((r) => setTimeout(r, 60));
   }
-  return videos;
+
+  await Promise.all(
+    Array.from({ length: Math.min(LIST_CONCURRENCY, ids.length) }, worker),
+  );
+
+  // Restore deterministic ordering (workers complete out of order)
+  out.sort((a, b) => a.id - b.id);
+  return out;
 }
 
 // ---------- mozoflix-admin ----------

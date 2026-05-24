@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { useState } from "react";
 import { useWallet } from "@/lib/useWallet";
 import { registerAndFund, stxToMicro } from "@/lib/stacks";
@@ -169,7 +168,6 @@ export default function UploadPage() {
 
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[1100px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[100px]">
         <div className="mb-2 flex items-center gap-3 font-ui text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
           <span className="block h-0.5 w-8 bg-accent" />

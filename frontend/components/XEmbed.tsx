@@ -26,20 +26,38 @@ declare global {
   }
 }
 
-let widgetsPromise: Promise<void> | null = null;
-function loadTwitterWidgets(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.twttr?.widgets) return Promise.resolve();
+let widgetsPromise: Promise<boolean> | null = null;
+
+/**
+ * Loads platform.twitter.com/widgets.js. Returns false when the script
+ * fails to load — typical causes are ad blockers (uBlock, Brave Shields)
+ * or corporate firewalls. Callers should show a fallback in that case.
+ */
+function loadTwitterWidgets(): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (window.twttr?.widgets) return Promise.resolve(true);
   if (widgetsPromise) return widgetsPromise;
   widgetsPromise = new Promise((resolve) => {
     const tag = document.createElement("script");
     tag.src = "https://platform.twitter.com/widgets.js";
     tag.async = true;
-    tag.onload = () => resolve();
+    tag.onload = () => resolve(true);
+    tag.onerror = () => {
+      widgetsPromise = null; // allow retry next mount
+      resolve(false);
+    };
+    // Hard timeout — Twitter sometimes returns 200 but never fires onload
+    setTimeout(() => resolve(!!window.twttr?.widgets), 8000);
     document.head.appendChild(tag);
   });
   return widgetsPromise;
 }
+
+type LoadState =
+  | { kind: "loading" }
+  | { kind: "ready" }
+  | { kind: "blocked" } // widgets.js failed to load (ad blocker, network)
+  | { kind: "missing" }; // tweet not found / protected / deleted
 
 /**
  * X (formerly Twitter) doesn't expose video playback progress to embeds.
@@ -52,25 +70,39 @@ export function XEmbed({
   onReachedThreshold,
 }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [load, setLoad] = useState<LoadState>({ kind: "loading" });
   const [active, setActive] = useState(true);
   const [elapsed, setElapsed] = useState(0);
   const firedRef = useRef(false);
+  const loaded = load.kind === "ready";
 
   useEffect(() => {
     let cancel = false;
     (async () => {
-      await loadTwitterWidgets();
-      if (cancel || !mountRef.current || !window.twttr) return;
+      const scriptOk = await loadTwitterWidgets();
+      if (cancel) return;
+      if (!scriptOk || !window.twttr?.widgets || !mountRef.current) {
+        setLoad({ kind: "blocked" });
+        return;
+      }
       mountRef.current.innerHTML = "";
-      window.twttr.widgets
-        .createTweet(postId, mountRef.current, {
-          theme: "dark",
-          dnt: true,
-          align: "center",
-        })
-        .then(() => !cancel && setLoaded(true))
-        .catch(() => {});
+      try {
+        // createTweet resolves with the iframe element on success, or
+        // undefined when the tweet is missing/protected/deleted.
+        const el = await window.twttr.widgets.createTweet(
+          postId,
+          mountRef.current,
+          { theme: "dark", dnt: true, align: "center" },
+        );
+        if (cancel) return;
+        if (!el) {
+          setLoad({ kind: "missing" });
+        } else {
+          setLoad({ kind: "ready" });
+        }
+      } catch {
+        if (!cancel) setLoad({ kind: "missing" });
+      }
     })();
     return () => {
       cancel = true;
@@ -103,11 +135,46 @@ export function XEmbed({
 
   const pct = Math.min(100, (elapsed / thresholdSec) * 100);
 
+  const postUrl = `https://x.com/i/status/${postId}`;
+
   return (
     <div className="overflow-hidden rounded-xl border border-accent/20 bg-surface">
-      <div className="bg-black p-2">
-        <div ref={mountRef} className="min-h-[320px] [&_iframe]:!mx-auto" />
+      <div className="relative bg-black p-2">
+        <div
+          ref={mountRef}
+          className={`min-h-[320px] [&_iframe]:!mx-auto ${
+            load.kind === "ready" ? "" : "invisible h-0"
+          }`}
+        />
+
+        {load.kind === "loading" && (
+          <div className="flex min-h-[320px] items-center justify-center">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-accent" />
+              <span className="font-ui text-[11px] uppercase tracking-[0.15em] text-muted">
+                Loading post from X…
+              </span>
+            </div>
+          </div>
+        )}
+
+        {load.kind === "blocked" && (
+          <FallbackPanel
+            title="X embed blocked"
+            body="Your browser or ad blocker is blocking platform.twitter.com. Disable shields for this site, or open the post directly."
+            postUrl={postUrl}
+          />
+        )}
+
+        {load.kind === "missing" && (
+          <FallbackPanel
+            title="Post unavailable"
+            body="This post was deleted, the account is protected, or the embed isn't permitted. Try opening it on X directly."
+            postUrl={postUrl}
+          />
+        )}
       </div>
+
       <div className="border-t border-white/5 px-4 py-2">
         <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
@@ -118,11 +185,47 @@ export function XEmbed({
         <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
           <span>X · engagement {Math.floor(pct)}%</span>
           <span>
-            {active ? "Watching…" : "Paused (tab inactive)"} · unlock at{" "}
-            {thresholdSec}s
+            {load.kind === "ready"
+              ? active
+                ? "Watching…"
+                : "Paused (tab inactive)"
+              : "Embed not playing"}{" "}
+            · unlock at {thresholdSec}s
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FallbackPanel({
+  title,
+  body,
+  postUrl,
+}: {
+  title: string;
+  body: string;
+  postUrl: string;
+}) {
+  return (
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 p-6 text-center">
+      <span className="material-symbols-outlined text-[36px] text-accent">
+        warning
+      </span>
+      <h3 className="font-display text-xl uppercase tracking-wide text-white">
+        {title}
+      </h3>
+      <p className="max-w-md text-[12px] font-light leading-relaxed text-muted">
+        {body}
+      </p>
+      <a
+        href={postUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 rounded bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black transition hover:bg-accent-bright"
+      >
+        Open on X →
+      </a>
     </div>
   );
 }

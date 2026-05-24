@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { SideNav } from "@/components/SideNav";
 import { EngagementBar } from "@/components/EngagementBar";
 import { SubscribeButton } from "@/components/SubscribeButton";
@@ -103,7 +102,6 @@ export default function WatchPage() {
 
   return (
     <>
-      <TopNav />
       <div className="flex">
         <SideNav />
         <main className="relative flex-1 overflow-y-auto pt-[64px] md:pt-[60px] lg:ml-64">

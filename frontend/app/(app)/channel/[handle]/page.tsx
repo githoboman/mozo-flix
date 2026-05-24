@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { VideoCard } from "@/components/VideoCard";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { MembershipModal } from "@/components/MembershipModal";
@@ -77,7 +76,6 @@ export default function ChannelPage() {
   if (params.handle === "me" && !wallet.connected && !wallet.loading) {
     return (
       <>
-        <TopNav />
         <main className="mx-auto max-w-[800px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[120px]">
           <div className="rounded-2xl border border-accent-border bg-card p-12 text-center">
             <h1 className="mb-3 font-display text-h1">Connect your wallet</h1>
@@ -92,7 +90,6 @@ export default function ChannelPage() {
 
   return (
     <>
-      <TopNav />
       <main>
         <div className="relative h-[180px] w-full overflow-hidden bg-gradient-to-br from-card via-surface to-bg pt-[60px] md:h-[260px]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,107,0,0.15),transparent_60%)]" />

@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { VideoCard } from "@/components/VideoCard";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -22,7 +21,6 @@ export default function SearchPage() {
 function SearchFallback() {
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[1400px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[100px]">
         <div className="text-muted">Loading search…</div>
       </main>
@@ -78,7 +76,6 @@ function SearchInner() {
 
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[1400px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[100px]">
         <div className="mb-2 font-ui text-[11px] uppercase tracking-[0.15em] text-muted">
           Search results for

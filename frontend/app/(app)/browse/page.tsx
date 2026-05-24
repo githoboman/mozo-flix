@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { SideNav } from "@/components/SideNav";
 import { VideoCard } from "@/components/VideoCard";
 import { RecommendedRail } from "@/components/RecommendedRail";
@@ -87,7 +86,6 @@ function BrowseInner() {
 
   return (
     <>
-      <TopNav />
       <div className="flex">
         <SideNav />
         <main className="flex-1 p-4 pt-[80px] sm:p-6 md:p-10 md:pt-[100px] lg:ml-64 lg:p-grid_unit lg:pt-[120px]">

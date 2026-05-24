@@ -1,6 +1,5 @@
 "use client";
 
-import { TopNav } from "@/components/TopNav";
 import { TxTable } from "./TxTable";
 import { useWallet } from "@/lib/useWallet";
 import { microToStx } from "@/lib/stacks";
@@ -90,7 +89,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <TopNav />
       <main className="mx-auto max-w-[1400px] px-4 pb-24 pt-[80px] sm:px-6 md:px-12 md:pt-[120px]">
         <div className="mb-2 flex items-center gap-3 font-ui text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
           <span className="block h-0.5 w-8 bg-accent" />
