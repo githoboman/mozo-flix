@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { listVideos } from "@/lib/stacks-reads";
+import { useEffect, useMemo, useState } from "react";
 import { recommend, type ScoredVideo } from "@/lib/recommendations";
 import { microToStx } from "@/lib/stacks";
-import { useResolvedVideoList } from "@/lib/useVideoList";
+import {
+  useResolvedVideoList,
+  type ResolvedListItem,
+} from "@/lib/useVideoList";
+import { useData } from "@/lib/DataProvider";
 import { SpotlightCard } from "./ui/spotlight-card";
 
 export function RecommendedRail({
@@ -14,60 +17,96 @@ export function RecommendedRail({
   title = "For You",
   subtitle = "AI-curated from your watch history",
   compact = false,
+  resolvedPool,
 }: {
   excludeIds?: number[];
   limit?: number;
   title?: string;
   subtitle?: string;
   compact?: boolean;
+  /**
+   * Pre-resolved video pool. When provided, the rail skips its own
+   * listVideos + manifest fetches entirely and scores from this list.
+   * Pass this from a parent that already has the data (e.g. /browse).
+   */
+  resolvedPool?: ResolvedListItem[] | null;
 }) {
-  const [recs, setRecs] = useState<ScoredVideo[] | null>(null);
+  const { getVideos } = useData();
+  const [fallbackPool, setFallbackPool] = useState<ResolvedListItem[] | null>(
+    null,
+  );
 
+  // Fallback: when parent didn't pass a resolved pool, fetch our own.
+  // Uses the DataProvider cache so the call is free if browse already
+  // populated it.
   useEffect(() => {
+    if (resolvedPool !== undefined) return;
     let cancel = false;
-    (async () => {
-      try {
-        const all = await listVideos();
+    getVideos()
+      .then((all) => {
         if (cancel) return;
-        const active = all.filter((v) => v.active);
-        // Score a wider pool so we still hit `limit` after dropping legacy entries
-        const ranked = recommend(active, new Set(excludeIds), limit * 2);
-        setRecs(ranked);
-      } catch {
-        if (!cancel) setRecs([]);
-      }
-    })();
+        // We don't have titles here — synthesize ResolvedListItem stubs and
+        // let the manifest hook below fill them in.
+        setFallbackPool(
+          all
+            .filter((v) => v.active)
+            .map((v) => ({
+              video: v,
+              title: `Video #${v.id}`,
+              description: "",
+              videoCid: null,
+              source: null,
+              thumbnail: null,
+              manifestResolved: false,
+            })),
+        );
+      })
+      .catch(() => {
+        if (!cancel) setFallbackPool([]);
+      });
     return () => {
       cancel = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(excludeIds), limit]);
+  }, [resolvedPool, getVideos]);
 
-  const resolved = useResolvedVideoList(
-    recs ? recs.map((r) => r.video) : null,
+  // Score whichever pool we have. Stable identity per render so the
+  // manifest resolver below doesn't thrash.
+  const recs = useMemo<ScoredVideo[] | null>(() => {
+    const pool = resolvedPool ?? fallbackPool;
+    if (!pool) return null;
+    const videos = pool.map((p) => p.video);
+    return recommend(videos, new Set(excludeIds), limit * 2);
+  }, [resolvedPool, fallbackPool, excludeIds, limit]);
+
+  // Fill in manifest data only for the standalone path. When the parent
+  // already resolved the pool, reuse those resolutions directly.
+  const fetchedResolved = useResolvedVideoList(
+    !resolvedPool && recs ? recs.map((r) => r.video) : null,
   );
+  const resolved = resolvedPool ?? fetchedResolved;
 
-  // Drop legacy entries that never got a manifest published.
-  // We only show videos whose IPFS manifest successfully resolved — that's our
-  // signal that the title was set deliberately by the creator (vs seeded from
-  // a stale localStorage entry).
-  const display = (() => {
+  // Build display list, showing whatever's resolved as it comes in.
+  // No more all-or-nothing gate.
+  const display = useMemo(() => {
     if (!recs || !resolved) return null;
-    // If we're still mid-fetch (any item not yet resolved), keep showing
-    // the loading skeleton instead of an empty rail.
-    const stillFetching = resolved.some((r) => !r.manifestResolved);
-    if (stillFetching) return null;
+    const byId = new Map(resolved.map((r) => [r.video.id, r]));
     const out: Array<{ rec: ScoredVideo; title: string }> = [];
-    for (let i = 0; i < recs.length; i++) {
-      const item = resolved[i];
+    for (const r of recs) {
+      const item = byId.get(r.video.id);
       if (!item || !item.manifestResolved) continue;
-      out.push({ rec: recs[i], title: item.title });
+      out.push({ rec: r, title: item.title });
       if (out.length >= limit) break;
     }
     return out;
-  })();
+  }, [recs, resolved, limit]);
 
-  if (display === null) {
+  // Only show skeleton during the *initial* load — once we have any data
+  // (even partial), render results immediately so the page doesn't feel
+  // blocked on the slowest IPFS gateway.
+  const hasAnyData = !!resolved;
+  const showSkeleton = !hasAnyData && !display;
+
+  if (showSkeleton) {
     return (
       <div className="my-8">
         <Header title={title} subtitle={subtitle} />
@@ -83,7 +122,7 @@ export function RecommendedRail({
     );
   }
 
-  if (display.length === 0) return null;
+  if (!display || display.length === 0) return null;
 
   if (compact) {
     return (

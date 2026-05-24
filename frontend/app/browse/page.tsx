@@ -137,7 +137,6 @@ function BrowseInner() {
             hasFilter ? <NoMatch /> : <EmptyState />
           ) : (
             <>
-              {!hasFilter && <RecommendedRail limit={8} />}
               <h2 className="mb-3 mt-6 font-display text-xl uppercase tracking-wide">
                 {hasFilter
                   ? `${filtered.length} video${filtered.length === 1 ? "" : "s"}`
@@ -157,6 +156,9 @@ function BrowseInner() {
                   />
                 ))}
               </div>
+              {!hasFilter && (
+                <RecommendedRail limit={8} resolvedPool={resolved} />
+              )}
             </>
           )}
 
