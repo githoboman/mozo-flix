@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
   src: string;                         // HTTPS URL — MP4 or .m3u8 HLS playlist
+  /** Optional fallback URLs (e.g. other IPFS gateways). Tried in order on load error. */
+  fallbackSrcs?: string[];
   poster?: string;
   thresholdPct?: number;              // when to fire onReachedThreshold (default 70)
   onReachedThreshold?: (pct: number) => void;
@@ -12,6 +14,7 @@ type Props = {
 
 export function VideoPlayer({
   src,
+  fallbackSrcs = [],
   poster,
   thresholdPct = 70,
   onReachedThreshold,
@@ -23,14 +26,26 @@ export function VideoPlayer({
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [hasFiredThreshold, setHasFiredThreshold] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [gatewayIdx, setGatewayIdx] = useState(0);
+
+  // All candidate URLs to try, in order.
+  const candidates = [src, ...fallbackSrcs].filter(Boolean);
+  const activeSrc = candidates[gatewayIdx] ?? src;
+
+  // Reset the rotation when the underlying source changes.
+  useEffect(() => {
+    setGatewayIdx(0);
+    setLoadError(null);
+  }, [src]);
 
   // Attach HLS.js when the source is an .m3u8 playlist (and the browser can't
   // play it natively, e.g. anything other than Safari).
   useEffect(() => {
-    if (!videoRef.current || !src) return;
+    if (!videoRef.current || !activeSrc) return;
     const video = videoRef.current;
 
-    const isHls = src.toLowerCase().includes(".m3u8");
+    const isHls = activeSrc.toLowerCase().includes(".m3u8");
     const canPlayNatively = video.canPlayType("application/vnd.apple.mpegurl");
 
     let hls: { destroy: () => void } | null = null;
@@ -43,25 +58,36 @@ export function VideoPlayer({
           if (cancelled) return;
           if (Hls.isSupported()) {
             const instance = new Hls();
-            instance.loadSource(src);
+            instance.loadSource(activeSrc);
             instance.attachMedia(video);
             hls = instance;
           } else {
-            video.src = src;
+            video.src = activeSrc;
           }
         } catch {
-          video.src = src;
+          video.src = activeSrc;
         }
       })();
     } else {
-      video.src = src;
+      video.src = activeSrc;
     }
 
     return () => {
       cancelled = true;
       hls?.destroy();
     };
-  }, [src]);
+  }, [activeSrc]);
+
+  /** On <video> error: try the next gateway, or surface a useful message. */
+  const onVideoError = () => {
+    if (gatewayIdx < candidates.length - 1) {
+      setGatewayIdx((i) => i + 1);
+    } else {
+      setLoadError(
+        "Video file couldn't be fetched from any IPFS gateway. The file may be unpinned, or all gateways are rate-limiting. Try again in a moment.",
+      );
+    }
+  };
 
   useEffect(() => {
     setHasFiredThreshold(false);
@@ -157,6 +183,7 @@ export function VideoPlayer({
         onPause={() => setPlaying(false)}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
         onTimeUpdate={onTimeUpdate}
+        onError={onVideoError}
         className="h-full w-full bg-black object-contain"
       />
 
@@ -244,6 +271,30 @@ export function VideoPlayer({
           <div className="font-ui text-[12px] uppercase tracking-[0.1em]">
             No video source
           </div>
+        </div>
+      )}
+
+      {loadError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/90 p-6 text-center">
+          <span className="material-symbols-outlined text-5xl text-accent">
+            warning
+          </span>
+          <h3 className="font-display text-xl uppercase tracking-wide text-white">
+            Video unavailable
+          </h3>
+          <p className="max-w-md text-[12px] font-light leading-relaxed text-muted">
+            {loadError}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoadError(null);
+              setGatewayIdx(0);
+            }}
+            className="mt-2 rounded bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black transition hover:bg-accent-bright"
+          >
+            Retry
+          </button>
         </div>
       )}
     </div>

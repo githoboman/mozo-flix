@@ -80,29 +80,45 @@ export function useResolvedVideoList(
     });
     setItems(seeded);
 
-    // Resolve manifests in parallel
-    Promise.all(
-      videos.map(async (v, i) => {
+    // Resolve manifests with bounded concurrency. Fully parallel triggers
+    // ERR_INSUFFICIENT_RESOURCES on the browser when many CIDs are racing
+    // multiple gateways at once. A small cap (4 in-flight) is enough to
+    // pipeline efficiently without saturating the per-host connection limit.
+    //
+    // We stream updates: each time a manifest resolves we splice the new
+    // entry into the array and call setItems so cards upgrade progressively
+    // instead of all flipping at the end.
+    const CONCURRENCY = 4;
+    const working = [...seeded];
+    const pool = videos; // narrow for the inner closure
+    let cursor = 0;
+
+    async function worker() {
+      while (cursor < pool.length) {
+        const i = cursor++;
+        const v = pool[i]!;
         const cid = extractCid(v.contentHash);
-        if (!cid) return seeded[i];
+        if (!cid) continue;
         const m = await fetchManifest(cid);
-        if (!m) return seeded[i];
+        if (cancel || !m) continue;
         const source = getSource(m);
-        return {
+        working[i] = {
           video: v,
-          title: m.title || seeded[i].title,
-          description: m.description || seeded[i].description,
-          category: m.category ?? seeded[i].category,
+          title: m.title || seeded[i]!.title,
+          description: m.description || seeded[i]!.description,
+          category: m.category ?? seeded[i]!.category,
           videoCid: source.type === "ipfs" ? source.videoCid : null,
           source,
           thumbnail: deriveThumb(source, m.thumbnailCid),
           manifestResolved: true,
         };
-      }),
-    ).then((resolved) => {
-      if (cancel) return;
-      setItems(resolved);
-    });
+        if (!cancel) setItems([...working]);
+      }
+    }
+
+    void Promise.all(
+      Array.from({ length: Math.min(CONCURRENCY, pool.length) }, worker),
+    );
 
     return () => {
       cancel = true;

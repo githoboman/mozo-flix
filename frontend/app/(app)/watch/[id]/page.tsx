@@ -20,7 +20,7 @@ import { ReadMore } from "@/components/ReadMore";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { XEmbed } from "@/components/XEmbed";
-import { ipfsToUrl } from "@/lib/ipfs";
+import { ipfsToUrl, ipfsToUrls } from "@/lib/ipfs";
 import { useWallet } from "@/lib/useWallet";
 import { recordWatch } from "@/lib/watchHistory";
 import { RecommendedRail } from "@/components/RecommendedRail";
@@ -236,6 +236,9 @@ export default function WatchPage() {
                         ) : (
                           <VideoPlayer
                             src={videoCid ? ipfsToUrl(videoCid) : ""}
+                            fallbackSrcs={
+                              videoCid ? ipfsToUrls(videoCid).slice(1) : []
+                            }
                             thresholdPct={video?.minCompletionPct ?? 70}
                             onProgress={recordProgress}
                             onReachedThreshold={triggerReward}

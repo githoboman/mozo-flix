@@ -108,16 +108,16 @@ export async function pinManifest(
 }
 
 /**
- * IPFS gateways raced in parallel. The user's NEXT_PUBLIC_PINATA_GATEWAY
- * (or the Pinata default) is included first via ipfsToUrl, then community
- * gateways. Whichever responds first wins — so a slow/blocked Pinata
- * gateway no longer holds up the whole page.
+ * IPFS gateways. We don't race all of them in parallel because opening
+ * 5 connections per CID across N videos quickly exceeds the browser's
+ * per-host connection limit and triggers ERR_INSUFFICIENT_RESOURCES.
+ *
+ * Strategy: try the primary (your Pinata gateway) first, then race only
+ * 2 fallbacks if the primary fails. Each gateway gets a short 5s window.
  */
 const FALLBACK_GATEWAYS = [
   "https://ipfs.io",
   "https://dweb.link",
-  "https://w3s.link",
-  "https://4everland.io",
 ];
 
 async function tryGateway(
@@ -137,8 +137,32 @@ async function tryGateway(
 }
 
 /**
- * Fetch a manifest by CID, with localStorage cache and multi-gateway race.
- * Returns null only if every gateway fails.
+ * In-flight dedup: if two components ask for the same CID at the same
+ * time, they share a single Promise instead of each kicking off their
+ * own gateway race. This is the main fix for the "hundreds of repeated
+ * requests for the same CID" ERR_INSUFFICIENT_RESOURCES storm.
+ */
+const inflight = new Map<string, Promise<VideoManifest | null>>();
+
+async function fetchManifestRaw(
+  cid: string,
+): Promise<VideoManifest | null> {
+  // Primary first (usually our Pinata gateway). If that works, we never
+  // touch the fallbacks.
+  try {
+    return await tryGateway(ipfsToUrl(cid), 5_000);
+  } catch {
+    // Race only the fallbacks — first one wins, others are aborted by
+    // the lost-race teardown.
+    return Promise.any(
+      FALLBACK_GATEWAYS.map((g) => tryGateway(`${g}/ipfs/${cid}`, 5_000)),
+    ).catch(() => null);
+  }
+}
+
+/**
+ * Fetch a manifest by CID, with localStorage cache, in-flight dedup,
+ * and primary-then-fallback gateway fetch.
  */
 export async function fetchManifest(
   cid: string,
@@ -149,21 +173,25 @@ export async function fetchManifest(
   const cache = readCache();
   if (cache[cid]) return cache[cid];
 
-  // Race all gateways in parallel — first success wins. Primary gets a
-  // shorter timeout so it doesn't tie up resources if it's slow.
-  const allUrls = [
-    ipfsToUrl(cid),
-    ...FALLBACK_GATEWAYS.map((g) => `${g}/ipfs/${cid}`),
-  ];
-  const manifest = await Promise.any(
-    allUrls.map((u) => tryGateway(u, 6_000)),
-  ).catch(() => null);
+  // Dedup: reuse any in-flight Promise for the same CID
+  const existing = inflight.get(cid);
+  if (existing) return existing;
 
-  if (manifest) {
-    cache[cid] = manifest;
-    writeCache(cache);
-  }
-  return manifest;
+  const p = fetchManifestRaw(cid)
+    .then((manifest) => {
+      if (manifest) {
+        const c = readCache();
+        c[cid] = manifest;
+        writeCache(c);
+      }
+      return manifest;
+    })
+    .finally(() => {
+      inflight.delete(cid);
+    });
+
+  inflight.set(cid, p);
+  return p;
 }
 
 /**
