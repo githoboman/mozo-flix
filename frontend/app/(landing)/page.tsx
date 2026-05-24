@@ -1,4 +1,4 @@
-import { TopNav } from "@/components/TopNav";
+import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/Hero";
 import { LandingHow } from "@/components/landing/How";
 import { LandingVideoSlider } from "@/components/landing/VideoSlider";
@@ -12,7 +12,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 export default function Home() {
   return (
     <>
-      <TopNav />
+      <LandingNav />
       <main>
         <LandingHero />
         <Ticker />

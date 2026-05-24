@@ -26,7 +26,6 @@ export function TopNav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const wallet = useWallet();
   const { isCreator, loading: creatorLoading } = useIsCreator();
-  const isLanding = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -44,12 +43,9 @@ export function TopNav() {
     ? `${wallet.address.slice(0, 4)}…${wallet.address.slice(-4)}`
     : "";
 
-  const navLinks =
-    isLanding && !wallet.connected
-      ? []
-      : isCreator
-      ? [...VIEWER_LINKS, ...CREATOR_LINKS]
-      : VIEWER_LINKS;
+  const navLinks = isCreator
+    ? [...VIEWER_LINKS, ...CREATOR_LINKS]
+    : VIEWER_LINKS;
 
   return (
     <>
@@ -96,26 +92,21 @@ export function TopNav() {
           })}
         </div>
 
-        {/* Desktop search (md+, not on landing) */}
-        {!isLanding && (
-          <div className="hidden flex-1 justify-center md:flex">
-            <SearchBar />
-          </div>
-        )}
-        {(isLanding || !navLinks.length) && <div className="flex-1" />}
+        {/* Desktop search */}
+        <div className="hidden flex-1 justify-center md:flex">
+          <SearchBar />
+        </div>
 
         {/* Mobile search icon */}
-        {!isLanding && (
-          <button
-            onClick={() => setSearchOpen((v) => !v)}
-            aria-label="Search"
-            className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:text-accent"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {searchOpen ? "close" : "search"}
-            </span>
-          </button>
-        )}
+        <button
+          onClick={() => setSearchOpen((v) => !v)}
+          aria-label="Search"
+          className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:text-accent"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {searchOpen ? "close" : "search"}
+          </span>
+        </button>
 
         <div className="flex items-center gap-2 md:gap-3">
           {/* Upload — desktop only inline. Mobile users get it via drawer/menu. */}
@@ -165,7 +156,7 @@ export function TopNav() {
       </nav>
 
       {/* Mobile search drawer */}
-      {searchOpen && !isLanding && (
+      {searchOpen && (
         <div className="fixed inset-x-0 top-[64px] z-[99] border-b border-accent-border bg-bg p-4 md:hidden">
           <SearchBar />
         </div>

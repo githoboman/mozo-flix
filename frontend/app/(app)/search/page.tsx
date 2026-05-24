@@ -4,9 +4,10 @@ import { TopNav } from "@/components/TopNav";
 import { VideoCard } from "@/components/VideoCard";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { listVideos, type VideoMeta } from "@/lib/stacks-reads";
+import { type VideoMeta } from "@/lib/stacks-reads";
 import { microToStx } from "@/lib/stacks";
 import { useResolvedVideoList } from "@/lib/useVideoList";
+import { useData } from "@/lib/DataProvider";
 
 const FILTERS = ["All", "Videos", "Channels"];
 
@@ -32,14 +33,27 @@ function SearchFallback() {
 function SearchInner() {
   const params = useSearchParams();
   const query = params.get("q") ?? "";
+  const { getVideos } = useData();
 
   const [allVideos, setAllVideos] = useState<VideoMeta[] | null>(null);
 
   useEffect(() => {
-    listVideos().then((list) => setAllVideos(list.filter((v) => v.active)));
-  }, []);
+    let cancel = false;
+    getVideos()
+      .then((list) => {
+        if (!cancel) setAllVideos(list.filter((v) => v.active));
+      })
+      .catch(() => {
+        if (!cancel) setAllVideos([]);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [getVideos]);
 
-  // Resolve manifests for ALL videos, then filter by query
+  // Resolve manifests progressively. The hook seeds with localStorage titles
+  // first, then upgrades as IPFS manifests come in — so search is usable
+  // immediately instead of blocking on the slowest gateway.
   const resolved = useResolvedVideoList(allVideos);
   const filtered = (resolved ?? []).filter((r) => {
     if (!query) return true;

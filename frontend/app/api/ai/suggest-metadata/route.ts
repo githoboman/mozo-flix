@@ -98,7 +98,34 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(clean);
   } catch (e) {
-    const msg = (e as Error).message ?? "AI suggestion failed";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const raw = (e as Error).message ?? "AI suggestion failed";
+    // Surface common provider errors as actionable messages instead of raw JSON
+    if (raw.includes("Anthropic 401") || /invalid x-api-key/i.test(raw)) {
+      return NextResponse.json(
+        {
+          error:
+            "AI assistant is offline — the Anthropic API key is invalid or revoked. " +
+            "Generate a fresh key at https://console.anthropic.com/settings/keys, " +
+            "update ANTHROPIC_API_KEY in your environment, and redeploy.",
+        },
+        { status: 502 },
+      );
+    }
+    if (raw.includes("Anthropic 429")) {
+      return NextResponse.json(
+        { error: "AI assistant is rate-limited upstream. Try again in a minute." },
+        { status: 429 },
+      );
+    }
+    if (raw.includes("ANTHROPIC_API_KEY missing")) {
+      return NextResponse.json(
+        {
+          error:
+            "AI assistant isn't configured on this deployment — ANTHROPIC_API_KEY env var is missing.",
+        },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json({ error: raw }, { status: 500 });
   }
 }

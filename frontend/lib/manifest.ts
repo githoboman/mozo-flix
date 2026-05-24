@@ -108,8 +108,40 @@ export async function pinManifest(
 }
 
 /**
- * Fetch a manifest by CID, with localStorage cache.
- * Returns null on any error so callers can fall back gracefully.
+ * Public IPFS gateways tried in order. The user's NEXT_PUBLIC_PINATA_GATEWAY
+ * (or the Pinata default) is tried first via ipfsToUrl; if that times out or
+ * 429s, we fall through to community gateways so the app keeps working even
+ * when the primary gateway is rate-limited or down.
+ */
+const FALLBACK_GATEWAYS = [
+  "https://ipfs.io",
+  "https://cloudflare-ipfs.com",
+  "https://dweb.link",
+];
+
+async function tryGateway(
+  url: string,
+  timeoutMs: number,
+): Promise<VideoManifest | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Partial<VideoManifest>;
+    const v1 = data?.schema === "mozoflix-video-v1" && (data as VideoManifestV1).videoCid;
+    const v2 = data?.schema === "mozoflix-video-v2" && (data as VideoManifestV2).source;
+    if (!v1 && !v2) return null;
+    return data as VideoManifest;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch a manifest by CID, with localStorage cache and multi-gateway fallback.
+ * Returns null only if every gateway fails so callers can fall back gracefully.
  */
 export async function fetchManifest(
   cid: string,
@@ -120,24 +152,32 @@ export async function fetchManifest(
   const cache = readCache();
   if (cache[cid]) return cache[cid];
 
-  try {
-    const res = await fetch(ipfsToUrl(cid), {
-      headers: { Accept: "application/json" },
-      // Short timeout — gateways can be slow
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as Partial<VideoManifest>;
-    const v1 = data?.schema === "mozoflix-video-v1" && (data as VideoManifestV1).videoCid;
-    const v2 = data?.schema === "mozoflix-video-v2" && (data as VideoManifestV2).source;
-    if (!v1 && !v2) return null;
-    const manifest = data as VideoManifest;
-    cache[cid] = manifest;
+  // Try primary (Pinata) gateway with a generous timeout
+  const primary = await tryGateway(ipfsToUrl(cid), 12_000);
+  if (primary) {
+    cache[cid] = primary;
     writeCache(cache);
-    return manifest;
-  } catch {
-    return null;
+    return primary;
   }
+
+  // Race the fallbacks — first one to respond wins. Saves 2× the wall-clock
+  // versus trying them sequentially.
+  const race = await Promise.any(
+    FALLBACK_GATEWAYS.map((g) =>
+      tryGateway(`${g}/ipfs/${cid}`, 8_000).then((m) => {
+        if (!m) throw new Error("no manifest");
+        return m;
+      }),
+    ),
+  ).catch(() => null);
+
+  if (race) {
+    cache[cid] = race;
+    writeCache(cache);
+    return race;
+  }
+
+  return null;
 }
 
 /**

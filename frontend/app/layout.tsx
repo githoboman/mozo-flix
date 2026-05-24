@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
-import { DataProvider } from "@/lib/DataProvider";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -46,9 +45,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-bg text-white noise-bg">
-        <DataProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </DataProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

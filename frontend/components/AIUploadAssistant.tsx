@@ -51,7 +51,7 @@ export function AIUploadAssistant({
       if (!res.ok) throw new Error(data.error ?? "AI failed");
       setState({ kind: "ready", suggestion: data });
     } catch (e) {
-      setState({ kind: "error", message: (e as Error).message });
+      setState({ kind: "error", message: friendlyAIError((e as Error).message) });
     }
   };
 
@@ -176,6 +176,32 @@ function Row({
       {children}
     </div>
   );
+}
+
+/**
+ * Translate raw provider error blobs into a single human sentence.
+ * The API route already does this for known codes, but we belt-and-brace
+ * the client so a cached old response or pre-deploy build can't leak
+ * Anthropic JSON into the UI.
+ */
+function friendlyAIError(raw: string): string {
+  if (/invalid x-api-key/i.test(raw) || /Anthropic 401/.test(raw)) {
+    return "AI assistant is offline — the Anthropic API key is invalid or revoked. Generate a new key at console.anthropic.com and update ANTHROPIC_API_KEY in your deployment.";
+  }
+  if (/Anthropic 429/.test(raw) || /rate.?limit/i.test(raw)) {
+    return "AI assistant is rate-limited. Try again in a minute.";
+  }
+  if (/ANTHROPIC_API_KEY missing/.test(raw)) {
+    return "AI assistant isn't configured on this deployment.";
+  }
+  if (/Anthropic 5\d\d/.test(raw)) {
+    return "AI provider is having an outage. Try again shortly.";
+  }
+  // Strip JSON-looking blobs that leaked through any other branch
+  if (raw.length > 160 || raw.includes("{") || raw.includes("\"type\"")) {
+    return "AI suggestion failed. You can fill in the title and description manually.";
+  }
+  return raw;
 }
 
 /** Reads media duration without uploading the file. */
