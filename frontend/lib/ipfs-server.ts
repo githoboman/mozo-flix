@@ -39,7 +39,7 @@ export async function pinFileToIPFS(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Pinata upload failed: ${res.status} ${text}`);
+    throw new Error(translatePinataError(res.status, text, "file upload"));
   }
 
   const data = (await res.json()) as { IpfsHash: string; PinSize: number };
@@ -66,10 +66,32 @@ export async function pinJsonToIPFS(
     }),
   });
   if (!res.ok) {
-    throw new Error(`Pinata JSON pin failed: ${res.status}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(translatePinataError(res.status, text, "manifest pin"));
   }
   const data = (await res.json()) as { IpfsHash: string };
   return { cid: data.IpfsHash };
+}
+
+/**
+ * Convert raw Pinata error responses into something a creator can act on.
+ * Most failures come down to: bad JWT, expired JWT, or out of plan quota.
+ */
+function translatePinataError(
+  status: number,
+  body: string,
+  context: string,
+): string {
+  if (status === 401 || status === 403) {
+    return `Pinata rejected ${context} (HTTP ${status}). The PINATA_JWT env var is missing, expired, or revoked. Generate a new key at https://app.pinata.cloud/developers/api-keys and update PINATA_JWT.`;
+  }
+  if (status === 402 || /quota|plan/i.test(body)) {
+    return `Pinata ${context} blocked by plan quota (HTTP ${status}). Upgrade the Pinata plan or free up storage.`;
+  }
+  if (status === 429) {
+    return `Pinata rate-limited the ${context}. Wait a minute and retry.`;
+  }
+  return `Pinata ${context} failed: ${status} ${body.slice(0, 200)}`;
 }
 
 /** Convert ipfs:// or bare CID into a gateway URL. */

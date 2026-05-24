@@ -11,8 +11,9 @@ const PUBLIC_GATEWAY =
  */
 const FALLBACK_GATEWAYS = [
   "https://ipfs.io",
-  "https://cloudflare-ipfs.com",
   "https://dweb.link",
+  "https://w3s.link",
+  "https://4everland.io",
 ];
 
 /** Convert ipfs:// URI or bare CID to a gateway URL. */

@@ -115,8 +115,9 @@ export async function pinManifest(
  */
 const FALLBACK_GATEWAYS = [
   "https://ipfs.io",
-  "https://cloudflare-ipfs.com",
   "https://dweb.link",
+  "https://w3s.link",
+  "https://4everland.io",
 ];
 
 async function tryGateway(
