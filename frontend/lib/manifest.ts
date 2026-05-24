@@ -8,7 +8,7 @@
  * cache never goes stale.
  */
 
-import { ipfsToUrl } from "./ipfs";
+import { ipfsToUrl, markGatewayUnavailable } from "./ipfs";
 
 /** v1 — IPFS-only. Kept for backward compat with existing on-chain videos. */
 export type VideoManifestV1 = {
@@ -128,7 +128,16 @@ async function tryGateway(
     headers: { Accept: "application/json" },
     signal: AbortSignal.timeout(timeoutMs),
   });
-  if (!res.ok) throw new Error(`gateway ${res.status}`);
+  if (!res.ok) {
+    // Sticky-skip auth failures — a dedicated Pinata gateway that returns 401
+    // for one CID will return 401 for every CID it doesn't have pinned.
+    // The shared ban list in ipfs.ts also makes video-file URLs avoid this
+    // host, so the <video> element doesn't keep hitting the same dead gateway.
+    if (res.status === 401 || res.status === 403) {
+      markGatewayUnavailable(url);
+    }
+    throw new Error(`gateway ${res.status}`);
+  }
   const data = (await res.json()) as Partial<VideoManifest>;
   const v1 = data?.schema === "mozoflix-video-v1" && (data as VideoManifestV1).videoCid;
   const v2 = data?.schema === "mozoflix-video-v2" && (data as VideoManifestV2).source;
