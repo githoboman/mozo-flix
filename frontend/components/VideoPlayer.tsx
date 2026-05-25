@@ -29,6 +29,15 @@ export function VideoPlayer({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [gatewayIdx, setGatewayIdx] = useState(0);
 
+  // Anti-fraud watch-time tracking:
+  // We credit only deltas that look like normal playback (0 < dt < 1.5s).
+  // Scrubbing forward, fast-forwarding, or reloading at the end no longer
+  // counts toward the reward threshold. Reward fires on real watched %
+  // (`watchedSec / duration`), not the scrub-position progress bar.
+  const watchedSecRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const [watchedPct, setWatchedPct] = useState(0);
+
   // All candidate URLs to try, in order.
   const candidates = [src, ...fallbackSrcs].filter(Boolean);
   const activeSrc = candidates[gatewayIdx] ?? src;
@@ -91,17 +100,33 @@ export function VideoPlayer({
 
   useEffect(() => {
     setHasFiredThreshold(false);
+    watchedSecRef.current = 0;
+    lastTimeRef.current = 0;
+    setWatchedPct(0);
   }, [src]);
 
   const onTimeUpdate = () => {
     const v = videoRef.current;
     if (!v || !v.duration) return;
-    const pct = (v.currentTime / v.duration) * 100;
-    setProgress(pct);
+
+    // Credit only normal-playback deltas. Scrubs and seeks (delta > 1.5s
+    // forward, or negative) are ignored — the bar reflects watched time,
+    // not the playhead position, so scrubbing to the end does nothing.
+    const cur = v.currentTime;
+    const dt = cur - lastTimeRef.current;
+    if (dt > 0 && dt < 1.5) {
+      watchedSecRef.current += dt;
+    }
+    lastTimeRef.current = cur;
+
+    const watchPct = (watchedSecRef.current / v.duration) * 100;
+    setWatchedPct(watchPct);
+    setProgress((cur / v.duration) * 100); // scrub indicator (visual only)
     onProgress?.(v.currentTime, v.duration);
-    if (!hasFiredThreshold && pct >= thresholdPct) {
+
+    if (!hasFiredThreshold && watchPct >= thresholdPct) {
       setHasFiredThreshold(true);
-      onReachedThreshold?.(Math.floor(pct));
+      onReachedThreshold?.(Math.floor(watchPct));
     }
   };
 
@@ -221,14 +246,22 @@ export function VideoPlayer({
             v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration;
           }}
         >
+          {/* Reward gate marker — visual reference for what % unlocks the reward */}
           <div
             className="absolute z-20 h-full w-px bg-white/60"
             style={{ left: `${thresholdPct}%` }}
             title={`${thresholdPct}% reward gate`}
           />
+          {/* Scrub position — translucent so users can still see where the playhead is */}
+          <div
+            className="absolute z-[5] h-full bg-white/15 transition-all"
+            style={{ width: `${progress}%` }}
+          />
+          {/* Real watched-time bar — this is the one that drives the reward */}
           <div
             className="relative z-10 h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_10px_rgba(255,107,0,0.8)] transition-all"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(100, watchedPct)}%` }}
+            title="Verified watch time"
           />
         </div>
 

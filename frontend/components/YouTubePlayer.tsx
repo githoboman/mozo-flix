@@ -67,8 +67,18 @@ export function YouTubePlayer({
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  // Anti-fraud: only count poll deltas that look like real playback
+  // (we poll at 1s intervals, so a normal delta is ~1s). Seeks produce
+  // big deltas which we ignore — scrubbing to the end stops earning rewards.
+  const watchedSecRef = useRef(0);
+  const lastCurRef = useRef(0);
+  const [watchedPct, setWatchedPct] = useState(0);
+
   useEffect(() => {
     firedRef.current = false;
+    watchedSecRef.current = 0;
+    lastCurRef.current = 0;
+    setWatchedPct(0);
     let cancelled = false;
 
     (async () => {
@@ -96,16 +106,31 @@ export function YouTubePlayer({
             if (!window.YT) return;
             if (data === window.YT.PlayerState.PLAYING) {
               if (pollRef.current) clearInterval(pollRef.current);
+              // Reset lastCur to current so the next tick measures a real
+              // delta (not a huge jump from wherever we paused before).
+              lastCurRef.current = p.getCurrentTime();
               pollRef.current = setInterval(() => {
                 const cur = p.getCurrentTime();
                 const dur = p.getDuration();
                 if (!dur) return;
-                setProgress((cur / dur) * 100);
+
+                // Credit only natural-playback deltas — anything bigger
+                // than ~1.5s (our poll interval is 1s) is a seek.
+                const dt = cur - lastCurRef.current;
+                if (dt > 0 && dt < 1.5) {
+                  watchedSecRef.current += dt;
+                }
+                lastCurRef.current = cur;
+
+                const wp = (watchedSecRef.current / dur) * 100;
+                setProgress((cur / dur) * 100); // scrub indicator
+                setWatchedPct(wp);
                 setDuration(dur);
                 onProgress?.(cur, dur);
-                if (!firedRef.current && (cur / dur) * 100 >= thresholdPct) {
+
+                if (!firedRef.current && wp >= thresholdPct) {
                   firedRef.current = true;
-                  onReachedThreshold?.(Math.floor((cur / dur) * 100));
+                  onReachedThreshold?.(Math.floor(wp));
                 }
               }, 1000);
             } else {
@@ -113,13 +138,18 @@ export function YouTubePlayer({
                 clearInterval(pollRef.current);
                 pollRef.current = null;
               }
-              // Catch the "ended" case in case threshold was just below 70
+              // "Ended" case: only fire if real watch time also crossed
+              // a fair share of the duration (≥ 50% — protects against
+              // open-and-seek-to-end). Anything less means they scrubbed.
               if (
                 data === window.YT.PlayerState.ENDED &&
                 !firedRef.current
               ) {
-                firedRef.current = true;
-                onReachedThreshold?.(100);
+                const dur = p.getDuration();
+                if (dur && (watchedSecRef.current / dur) * 100 >= 50) {
+                  firedRef.current = true;
+                  onReachedThreshold?.(100);
+                }
               }
             }
           },
@@ -149,16 +179,22 @@ export function YouTubePlayer({
       <div className="border-t border-white/5 bg-surface px-4 py-2">
         <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="absolute left-0 right-0 top-0 z-10 h-full w-px bg-white/40"
+            className="absolute left-0 right-0 top-0 z-20 h-full w-px bg-white/40"
             style={{ left: `${thresholdPct}%` }}
           />
+          {/* Scrub position — faint so users see where the playhead is */}
           <div
-            className="h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
+            className="absolute z-[5] h-full bg-white/15 transition-all"
             style={{ width: `${progress}%` }}
+          />
+          {/* Verified watch time — drives the reward */}
+          <div
+            className="relative z-10 h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
+            style={{ width: `${Math.min(100, watchedPct)}%` }}
           />
         </div>
         <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
-          <span>YouTube · {Math.floor(progress)}%</span>
+          <span>YouTube · verified {Math.floor(watchedPct)}%</span>
           <span>
             Reward unlocks at {thresholdPct}%
             {duration ? ` · ${Math.round(duration)}s total` : ""}

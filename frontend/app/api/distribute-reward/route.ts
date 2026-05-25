@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { distributeReward } from "@/lib/stacks-server";
 import { takeToken } from "@/lib/rateLimit";
+import { getVideo, hasClaimed } from "@/lib/stacks-reads";
 
 export const runtime = "nodejs";
 
@@ -64,6 +65,41 @@ export async function POST(req: NextRequest) {
             "Retry-After": String(Math.ceil(walletLimit.resetMs / 1000)),
           },
         },
+      );
+    }
+
+    // Anti-fraud: server-side prechecks. The on-chain contract enforces the
+    // hard rules (has-claimed, pool balance) but we reject obvious bogus
+    // requests here so we don't waste a wallet broadcast slot signing a tx
+    // that's guaranteed to fail.
+    const video = await getVideo(body.videoId).catch(() => null);
+    if (!video) {
+      return NextResponse.json(
+        { error: "Video not found on-chain" },
+        { status: 404 },
+      );
+    }
+    if (!video.active) {
+      return NextResponse.json(
+        { error: "This video has been deactivated by the creator" },
+        { status: 409 },
+      );
+    }
+    if (body.completion < video.minCompletionPct) {
+      return NextResponse.json(
+        {
+          error: `Reward gate is ${video.minCompletionPct}% — you reported ${body.completion}%. Keep watching.`,
+        },
+        { status: 403 },
+      );
+    }
+    const already = await hasClaimed(body.videoId, body.viewer).catch(
+      () => false,
+    );
+    if (already) {
+      return NextResponse.json(
+        { error: "This wallet has already earned the reward for this video" },
+        { status: 409 },
       );
     }
 

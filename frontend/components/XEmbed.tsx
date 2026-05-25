@@ -70,11 +70,19 @@ export function XEmbed({
   onReachedThreshold,
 }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [load, setLoad] = useState<LoadState>({ kind: "loading" });
-  const [active, setActive] = useState(true);
+  const [tabActive, setTabActive] = useState(
+    typeof document !== "undefined" ? !document.hidden : true,
+  );
+  const [inView, setInView] = useState(false);
+  /** Gate the engagement timer behind an explicit click. Stops the
+   *  progress bar from running just because the embed is on the page. */
+  const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const firedRef = useRef(false);
   const loaded = load.kind === "ready";
+  const running = loaded && started && tabActive && inView;
 
   useEffect(() => {
     let cancel = false;
@@ -111,16 +119,37 @@ export function XEmbed({
 
   // Track tab focus — pause the timer when user switches tabs.
   useEffect(() => {
-    const onVis = () => setActive(!document.hidden);
+    const onVis = () => setTabActive(!document.hidden);
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  // Tick the engagement timer once the embed is loaded.
+  // Track on-screen visibility via IntersectionObserver — the timer pauses
+  // if the user scrolls the embed off-screen.
   useEffect(() => {
-    if (!loaded) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(!!entry && entry.intersectionRatio >= 0.5),
+      { threshold: [0, 0.5, 1] },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Reset timer when post changes
+  useEffect(() => {
+    setStarted(false);
+    setElapsed(0);
+    firedRef.current = false;
+  }, [postId]);
+
+  // Tick only when ALL of: loaded, user-started, tab active, in viewport.
+  // X doesn't expose playback state to embeds, so this is the strongest
+  // signal we can offer that the viewer is actually watching.
+  useEffect(() => {
+    if (!running) return;
     const t = setInterval(() => {
-      if (!active) return;
       setElapsed((e) => {
         const next = e + 1;
         if (!firedRef.current && next >= thresholdSec) {
@@ -131,14 +160,17 @@ export function XEmbed({
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [loaded, active, thresholdSec, onReachedThreshold]);
+  }, [running, thresholdSec, onReachedThreshold]);
 
   const pct = Math.min(100, (elapsed / thresholdSec) * 100);
 
   const postUrl = `https://x.com/i/status/${postId}`;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-accent/20 bg-surface">
+    <div
+      ref={containerRef}
+      className="overflow-hidden rounded-xl border border-accent/20 bg-surface"
+    >
       <div className="relative bg-black p-2">
         <div
           ref={mountRef}
@@ -175,24 +207,46 @@ export function XEmbed({
         )}
       </div>
 
-      <div className="border-t border-white/5 px-4 py-2">
-        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
-          <span>X · engagement {Math.floor(pct)}%</span>
-          <span>
-            {load.kind === "ready"
-              ? active
-                ? "Watching…"
-                : "Paused (tab inactive)"
-              : "Embed not playing"}{" "}
-            · unlock at {thresholdSec}s
-          </span>
-        </div>
+      <div className="border-t border-white/5 px-4 py-3">
+        {loaded && !started ? (
+          // X doesn't expose playback state to embeds, so we require an
+          // explicit click before crediting watch time. Stops the bar from
+          // ticking just because the embed is on the page.
+          <div className="flex flex-col items-center gap-2 text-center">
+            <button
+              type="button"
+              onClick={() => setStarted(true)}
+              className="rounded bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black transition hover:bg-accent-bright"
+            >
+              ▶ Start the {thresholdSec}s engagement timer
+            </button>
+            <span className="font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
+              Press play on the post above, then start the timer
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
+              <span>X · engagement {Math.floor(pct)}%</span>
+              <span>
+                {!loaded
+                  ? "Embed not playing"
+                  : !tabActive
+                    ? "Paused (tab inactive)"
+                    : !inView
+                      ? "Paused (scrolled off-screen)"
+                      : "Watching…"}{" "}
+                · unlock at {thresholdSec}s
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

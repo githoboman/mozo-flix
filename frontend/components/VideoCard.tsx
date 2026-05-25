@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { SpotlightCard } from "./ui/spotlight-card";
 
 export function VideoCard({
   id,
@@ -31,11 +30,10 @@ export function VideoCard({
   const gradientAvatar = `linear-gradient(135deg, hsl(${(seed * 23) % 360},70%,55%), hsl(${(seed * 89) % 360},80%,40%))`;
 
   return (
-    <SpotlightCard
-      className="card-reveal rounded-lg border-accent-border shadow-md"
-      radius={320}
+    <Link
+      href={`/watch/${id}`}
+      className="card-reveal group block overflow-hidden rounded-lg border border-accent-border bg-card-2 shadow-md transition-colors hover:border-accent/40"
     >
-      <Link href={`/watch/${id}`} className="block">
         <div className="relative aspect-video overflow-hidden">
           {thumb ? (
             <Image
@@ -102,8 +100,7 @@ export function VideoCard({
               <span className="truncate">{views}</span>
             </div>
           )}
-        </div>
-      </Link>
-    </SpotlightCard>
+      </div>
+    </Link>
   );
 }

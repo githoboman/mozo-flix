@@ -9,7 +9,6 @@ import {
   type ResolvedListItem,
 } from "@/lib/useVideoList";
 import { useData } from "@/lib/DataProvider";
-import { SpotlightCard } from "./ui/spotlight-card";
 
 export function RecommendedRail({
   excludeIds = [],
@@ -176,31 +175,32 @@ function RailCard({ rec, title }: { rec: ScoredVideo; title: string }) {
   const seed = (title + v.id).length;
   const gradient = `linear-gradient(135deg, hsl(${(seed * 37) % 360},45%,18%), hsl(${(seed * 67) % 360},55%,8%))`;
   return (
-    <SpotlightCard className="w-[260px] shrink-0 snap-start">
-      <Link href={`/watch/${v.id}`} className="block">
-        <div
-          className="relative aspect-video"
-          style={{ background: gradient }}
-        >
-          <div className="absolute right-3 top-3 rounded-full bg-accent px-2.5 py-0.5 font-ui text-[10px] font-bold text-black shadow-[0_0_12px_rgba(255,107,0,0.5)]">
-            +{microToStx(v.rewardPerView)} STX
-          </div>
-          <div className="absolute bottom-3 left-3 rounded bg-black/70 px-2 py-0.5 font-ui text-[9px] uppercase tracking-[0.1em] text-accent backdrop-blur-sm">
-            Match {Math.round(rec.score * 100)}%
-          </div>
+    <Link
+      href={`/watch/${v.id}`}
+      className="group block w-[260px] shrink-0 snap-start overflow-hidden rounded-xl border border-accent-border bg-card-2 transition-colors hover:border-accent/40"
+    >
+      <div
+        className="relative aspect-video"
+        style={{ background: gradient }}
+      >
+        <div className="absolute right-3 top-3 rounded-full bg-accent px-2.5 py-0.5 font-ui text-[10px] font-bold text-black shadow-[0_0_12px_rgba(255,107,0,0.5)]">
+          +{microToStx(v.rewardPerView)} STX
         </div>
-        <div className="p-4">
-          <h3 className="mb-1 line-clamp-2 font-ui text-[14px] font-bold text-white group-hover:text-accent">
-            {title}
-          </h3>
-          {rec.reasons[0] && (
-            <p className="line-clamp-1 text-[11px] font-light text-muted">
-              ✨ {rec.reasons[0]}
-            </p>
-          )}
+        <div className="absolute bottom-3 left-3 rounded bg-black/70 px-2 py-0.5 font-ui text-[9px] uppercase tracking-[0.1em] text-accent backdrop-blur-sm">
+          Match {Math.round(rec.score * 100)}%
         </div>
-      </Link>
-    </SpotlightCard>
+      </div>
+      <div className="p-4">
+        <h3 className="mb-1 line-clamp-2 font-ui text-[14px] font-bold text-white group-hover:text-accent">
+          {title}
+        </h3>
+        {rec.reasons[0] && (
+          <p className="line-clamp-1 text-[11px] font-light text-muted">
+            ✨ {rec.reasons[0]}
+          </p>
+        )}
+      </div>
+    </Link>
   );
 }
 
