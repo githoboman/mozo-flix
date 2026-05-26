@@ -90,16 +90,60 @@ export function LiveCampaignsTable({
   };
 
   const onToggleActive = async (id: number, active: boolean) => {
+    // When deactivating a campaign with funds still in the pool, ask
+    // whether to also pull those funds back to the wallet. set-video-active
+    // and withdraw-pool are separate contract calls, so this is two signs
+    // back-to-back rather than one — we confirm up front so the second
+    // wallet prompt isn't a surprise.
+    const campaign = campaigns?.find((c) => c.id === id);
+    const goingInactive = active;
+    const balance = campaign?.balance ?? 0n;
+    let alsoWithdraw = false;
+    if (goingInactive && balance > 0n) {
+      alsoWithdraw = confirm(
+        `Deactivate #${id} and withdraw ${microToStx(balance)} STX from the pool back to your wallet? You'll be asked to sign two transactions.`,
+      );
+    }
+
     setBusy({ id, action: "toggle" });
     try {
       await setVideoActive(id, !active, (txId) => {
         toast.show({
           kind: "success",
           title: active ? "Video deactivated" : "Video reactivated",
-          body: `#${id} ${active ? "hidden from feed" : "back on the feed"}`,
+          body: alsoWithdraw
+            ? `#${id} hidden from feed. Sign the next prompt to pull ${microToStx(balance)} STX back.`
+            : `#${id} ${active ? "hidden from feed" : "back on the feed"}`,
           action: { label: "View tx", href: explorerTxUrl(txId) },
         });
       });
+
+      if (alsoWithdraw) {
+        // Chain into withdraw-pool. We don't await this in the outer try —
+        // its own try/catch handles failure so a withdraw rejection
+        // doesn't undo the deactivate success.
+        try {
+          await withdrawPool(id, (withdrawTxId) => {
+            toast.show({
+              kind: "success",
+              title: "Withdrawal submitted",
+              body: `${microToStx(balance)} STX → your wallet`,
+              action: {
+                label: "View tx",
+                href: explorerTxUrl(withdrawTxId),
+              },
+            });
+          });
+        } catch (e) {
+          toast.show({
+            kind: "error",
+            title: "Deactivated, withdraw failed",
+            body:
+              friendlyError(e) +
+              " — you can retry from the Withdraw button.",
+          });
+        }
+      }
     } catch (e) {
       toast.show({
         kind: "error",
