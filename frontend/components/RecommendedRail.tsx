@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { recommend, type ScoredVideo } from "@/lib/recommendations";
 import { microToStx } from "@/lib/stacks";
+import { watchUrl } from "@/lib/format";
 import {
   useResolvedVideoList,
   type ResolvedListItem,
@@ -176,7 +177,7 @@ function RailCard({ rec, title }: { rec: ScoredVideo; title: string }) {
   const gradient = `linear-gradient(135deg, hsl(${(seed * 37) % 360},45%,18%), hsl(${(seed * 67) % 360},55%,8%))`;
   return (
     <Link
-      href={`/watch/${v.id}`}
+      href={watchUrl(v.id, title)}
       className="group block w-[260px] shrink-0 snap-start overflow-hidden rounded-xl border border-accent-border bg-card-2 transition-colors hover:border-accent/40"
     >
       <div
@@ -210,7 +211,7 @@ function CompactCard({ rec, title }: { rec: ScoredVideo; title: string }) {
   const gradient = `linear-gradient(135deg, hsl(${(seed * 37) % 360},45%,18%), hsl(${(seed * 67) % 360},55%,8%))`;
   return (
     <Link
-      href={`/watch/${v.id}`}
+      href={watchUrl(v.id, title)}
       className="group flex gap-3 rounded-lg border border-white/5 bg-surface p-2 transition hover:border-accent/30 hover:bg-card-2"
     >
       <div

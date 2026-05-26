@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { WalletModal } from "../WalletModal";
 import { getLandingStats, type LandingStats } from "@/lib/landingStats";
 import { CountUp } from "@/components/CountUp";
-import { MovingBorderButton } from "@/components/ui/moving-border";
-import { TextGenerate } from "@/components/ui/text-generate";
 
 export function LandingHero() {
   const [walletOpen, setWalletOpen] = useState(false);
@@ -31,13 +29,9 @@ export function LandingHero() {
             Built on Stacks · Bitcoin-Secured
           </div>
 
-          <TextGenerate
-            words="WATCH. EARN. OWN."
-            accentWords={["EARN."]}
-            className="mb-7 leading-[0.92] tracking-[0.02em] text-[clamp(72px,9vw,140px)]"
-            delay={0.12}
-            duration={0.7}
-          />
+          <h1 className="mb-7 animate-fade-up font-display leading-[0.92] tracking-[0.02em] text-[clamp(48px,9vw,140px)]">
+            WATCH. <span className="text-accent">EARN.</span> OWN.
+          </h1>
 
           <p
             className="mb-12 max-w-[520px] animate-fade-up text-[17px] font-light leading-[1.7] text-muted"
@@ -51,14 +45,14 @@ export function LandingHero() {
             className="flex animate-fade-up flex-wrap items-center gap-4"
             style={{ animationDelay: "0.3s" }}
           >
-            <MovingBorderButton
+            <button
+              type="button"
               onClick={() => setWalletOpen(true)}
-              containerClassName="hover:-translate-y-0.5 transition-transform"
-              className="hover:shadow-glow-lg"
+              className="group flex items-center gap-2.5 rounded bg-accent px-9 py-4 font-ui text-[14px] font-bold uppercase tracking-[0.08em] text-black transition hover:-translate-y-0.5 hover:bg-accent-bright hover:shadow-glow-lg"
             >
               Start Earning
               <span className="transition group-hover:translate-x-1">→</span>
-            </MovingBorderButton>
+            </button>
             <a
               href="#how"
               className="rounded border border-white/20 px-8 py-[15px] font-ui text-[14px] font-semibold uppercase tracking-[0.08em] text-white transition hover:-translate-y-0.5 hover:border-accent hover:text-accent"

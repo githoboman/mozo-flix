@@ -23,7 +23,6 @@ import { XEmbed } from "@/components/XEmbed";
 import { ipfsToUrl, ipfsToUrls } from "@/lib/ipfs";
 import { useWallet } from "@/lib/useWallet";
 import { recordWatch } from "@/lib/watchHistory";
-import { RecommendedRail } from "@/components/RecommendedRail";
 import { useToast } from "@/components/Toast";
 import { TxChip } from "@/components/Chips";
 import { formatStx } from "@/lib/format";
@@ -120,9 +119,9 @@ export default function WatchPage() {
                 </a>
               </div>
             ) : (
-              <div className="grid grid-cols-12 gap-4 md:gap-8">
-                {/* Left: player + meta */}
-                <div className="col-span-12 flex flex-col gap-8 xl:col-span-8">
+              <div className="mx-auto max-w-[1100px]">
+                {/* Player + meta — full width, no side rail to compete for attention */}
+                <div className="flex flex-col gap-8">
                   {(() => {
                     const source = resolved.source;
                     const videoCid = resolved.videoCid;
@@ -382,19 +381,6 @@ export default function WatchPage() {
                     creatorAddress={video?.creator}
                   />
                   <CommentsSection />
-                </div>
-
-                {/* Right: AI Up Next */}
-                <div className="col-span-12 flex h-full flex-col xl:col-span-4">
-                  <div className="flex flex-col rounded-xl border border-accent-border bg-card-2 p-5 xl:sticky xl:top-[100px] xl:max-h-[calc(100vh-200px)] xl:overflow-y-auto">
-                    <RecommendedRail
-                      excludeIds={[videoId]}
-                      limit={5}
-                      title="Up Next"
-                      subtitle="AI picks based on your taste"
-                      compact
-                    />
-                  </div>
                 </div>
               </div>
             )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { watchUrl } from "@/lib/format";
 
 export function VideoCard({
   id,
@@ -31,7 +32,7 @@ export function VideoCard({
 
   return (
     <Link
-      href={`/watch/${id}`}
+      href={watchUrl(id, title)}
       className="card-reveal group block overflow-hidden rounded-lg border border-accent-border bg-card-2 shadow-md transition-colors hover:border-accent/40"
     >
         <div className="relative aspect-video overflow-hidden">

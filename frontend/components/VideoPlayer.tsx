@@ -109,12 +109,13 @@ export function VideoPlayer({
     const v = videoRef.current;
     if (!v || !v.duration) return;
 
-    // Credit only normal-playback deltas. Scrubs and seeks (delta > 1.5s
-    // forward, or negative) are ignored — the bar reflects watched time,
-    // not the playhead position, so scrubbing to the end does nothing.
+    // Credit only normal-playback deltas. HTML5 `timeupdate` fires roughly
+    // every 250ms (~4× / s); buffer pauses can briefly push the gap to ~2s.
+    // We accept up to 2.5s as "still playing" so jitter doesn't break the
+    // tracker, while seeks (which jump 5+ seconds) are still rejected.
     const cur = v.currentTime;
     const dt = cur - lastTimeRef.current;
-    if (dt > 0 && dt < 1.5) {
+    if (dt > 0 && dt < 2.5) {
       watchedSecRef.current += dt;
     }
     lastTimeRef.current = cur;

@@ -114,10 +114,13 @@ export function YouTubePlayer({
                 const dur = p.getDuration();
                 if (!dur) return;
 
-                // Credit only natural-playback deltas — anything bigger
-                // than ~1.5s (our poll interval is 1s) is a seek.
+                // Credit only natural-playback deltas. Poll interval is 1s,
+                // but ad inserts, buffer stalls, and YouTube's own playback
+                // hiccups can push the gap up to ~2s. We accept up to 2.5s
+                // so jitter doesn't break tracking; seeks (5+ second jumps)
+                // are still rejected.
                 const dt = cur - lastCurRef.current;
-                if (dt > 0 && dt < 1.5) {
+                if (dt > 0 && dt < 2.5) {
                   watchedSecRef.current += dt;
                 }
                 lastCurRef.current = cur;
@@ -170,8 +173,16 @@ export function YouTubePlayer({
 
   return (
     <div className="overflow-hidden rounded-xl border border-accent/20 bg-black shadow-[0_0_40px_rgba(255,107,0,0.15)]">
+      {/*
+        The YouTube IFrame API creates an iframe at its default 640x360 size,
+        ignoring the parent. We force it to fill via Tailwind arbitrary
+        descendant selectors so the embed actually matches our 16:9 column.
+      */}
       <div className="relative aspect-video w-full">
-        <div ref={mountRef} className="absolute inset-0">
+        <div
+          ref={mountRef}
+          className="absolute inset-0 [&_iframe]:!h-full [&_iframe]:!w-full [&>div]:h-full [&>div]:w-full"
+        >
           <div id="yt-target" />
         </div>
       </div>

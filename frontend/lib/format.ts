@@ -28,6 +28,37 @@ export function formatNumber(n: number | bigint): string {
   return Number(n).toLocaleString("en-US");
 }
 
+/**
+ * Turn a video title into a URL-safe slug. Lower-cased, ASCII letters/digits
+ * only, hyphen-separated, max 60 chars. Returns an empty string for falsy/
+ * untitled videos (so callers don't end up with a trailing slash).
+ *
+ *   "Bitcoin Advice You Need Now!"  -> "bitcoin-advice-you-need-now"
+ *   "Stacks 🟧 Nakamoto"            -> "stacks-nakamoto"
+ *   ""                              -> ""
+ */
+export function slugify(input: string | null | undefined): string {
+  if (!input) return "";
+  return input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "") // strip diacritics
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60)
+    .replace(/-+$/g, ""); // trim if the slice landed mid-word
+}
+
+/**
+ * Canonical URL for a video. ID is the source of truth; slug is decorative
+ * and ignored by the router. Falls back to `/watch/{id}` when no title is
+ * available (yet).
+ */
+export function watchUrl(id: number | string, title?: string | null): string {
+  const slug = slugify(title ?? "");
+  return slug ? `/watch/${id}/${slug}` : `/watch/${id}`;
+}
+
 /** Short address: SP12…AB34 */
 export function shortAddress(addr: string | null | undefined, head = 4, tail = 4): string {
   if (!addr) return "";

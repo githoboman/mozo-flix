@@ -68,11 +68,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Anti-fraud: server-side prechecks. The on-chain contract enforces the
-    // hard rules (has-claimed, pool balance) but we reject obvious bogus
-    // requests here so we don't waste a wallet broadcast slot signing a tx
-    // that's guaranteed to fail.
-    const video = await getVideo(body.videoId).catch(() => null);
+    // Anti-fraud: server-side prechecks run in parallel so the user doesn't
+    // wait for two sequential Hiro round-trips before the actual signing.
+    // The on-chain contract enforces hard rules (has-claimed, pool balance);
+    // we just reject obvious bogus requests early to save a wallet slot.
+    const [video, already] = await Promise.all([
+      getVideo(body.videoId).catch(() => null),
+      hasClaimed(body.videoId, body.viewer).catch(() => false),
+    ]);
     if (!video) {
       return NextResponse.json(
         { error: "Video not found on-chain" },
@@ -93,9 +96,6 @@ export async function POST(req: NextRequest) {
         { status: 403 },
       );
     }
-    const already = await hasClaimed(body.videoId, body.viewer).catch(
-      () => false,
-    );
     if (already) {
       return NextResponse.json(
         { error: "This wallet has already earned the reward for this video" },

@@ -8,12 +8,14 @@ import { setVideoMeta } from "@/lib/videoMeta";
 import { uploadToIPFS } from "@/lib/ipfs";
 import { RewardSuggestionWidget } from "@/components/RewardSuggestion";
 import { AIUploadAssistant } from "@/components/AIUploadAssistant";
+import { ThumbnailPicker } from "@/components/ThumbnailPicker";
 import { TxChip } from "@/components/Chips";
 import { formatStx } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/Button";
 import { friendlyError } from "@/lib/errorMessage";
 import { pinManifest } from "@/lib/manifest";
+import { watchUrl } from "@/lib/format";
 import {
   parseYouTubeUrl,
   parseXUrl,
@@ -37,6 +39,10 @@ export default function UploadPage() {
   const [pool, setPool] = useState(50);
   const [threshold, setThreshold] = useState(70);
   const [category, setCategory] = useState("Education");
+  // Thumbnail picked from <ThumbnailPicker>. blob = upload to IPFS,
+  // previewUrl = render locally + persist to videoMeta.
+  const [thumbBlob, setThumbBlob] = useState<Blob | null>(null);
+  const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<
     | { kind: "idle" }
     | { kind: "uploading"; pct?: number }
@@ -106,6 +112,23 @@ export default function UploadPage() {
         manifestSource = buildXSource(parsed.id, parsed.url);
       }
 
+      // Upload the picked thumbnail to IPFS first so we can reference its CID
+      // in the manifest. If the user didn't pick one (or chose to use YouTube's
+      // auto thumbnail), this stays undefined and the platform falls back to
+      // the source's default (YouTube CDN, or a deterministic gradient).
+      let thumbnailCid: string | undefined;
+      if (thumbBlob) {
+        try {
+          const thumbFile = new File([thumbBlob], "thumbnail.jpg", {
+            type: thumbBlob.type || "image/jpeg",
+          });
+          const { cid } = await uploadToIPFS(thumbFile);
+          thumbnailCid = cid;
+        } catch (e) {
+          console.warn("[upload] thumbnail pin failed; continuing without it", e);
+        }
+      }
+
       // Pin the manifest. v2 schema with source descriptor — works for all types.
       setStatus({
         kind: "pinning-manifest",
@@ -117,6 +140,7 @@ export default function UploadPage() {
         title: title.trim(),
         description: desc.trim(),
         category,
+        thumbnailCid,
         source: manifestSource!,
         uploaderAddress: wallet.address,
         uploadedAt: Date.now(),
@@ -138,6 +162,11 @@ export default function UploadPage() {
             category,
             videoCid: resolvedVideoCid,
             videoFormat: sourceType === "file" ? "mp4" : undefined,
+            // Prefer the pinned CID (cross-browser), fall back to the in-memory
+            // preview URL so the uploader sees their thumb on /browse instantly.
+            thumbnail: thumbnailCid
+              ? `ipfs://${thumbnailCid}`
+              : thumbPreview ?? undefined,
             uploadedAt: Date.now(),
             uploaderAddress: wallet.address!,
           });
@@ -154,7 +183,7 @@ export default function UploadPage() {
             body: `#${expectedId} · ${title.trim()} · pool funded with ${pool} STX`,
             action: {
               label: "Open video",
-              href: `/watch/${expectedId}`,
+              href: watchUrl(expectedId, title.trim()),
             },
           });
         },
@@ -284,6 +313,24 @@ export default function UploadPage() {
                   setTitle(s.title);
                   setDesc(s.description);
                   setCategory(s.category);
+                }}
+              />
+            )}
+
+            {/* Thumbnail picker. Hidden for X (no auto default, and we don't
+                want a third upload step in the X flow). For file uploads,
+                auto-extracts a frame; for YouTube, seeds with i.ytimg.com. */}
+            {sourceType !== "x" && (
+              <ThumbnailPicker
+                videoFile={sourceType === "file" ? file : null}
+                youtubeId={
+                  sourceType === "youtube"
+                    ? (parseYouTubeUrl(ytUrl)?.id ?? undefined)
+                    : undefined
+                }
+                onChange={(blob, preview) => {
+                  setThumbBlob(blob);
+                  setThumbPreview(preview);
                 }}
               />
             )}
@@ -446,7 +493,7 @@ export default function UploadPage() {
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <a
-                    href={`/watch/${status.videoId}`}
+                    href={watchUrl(status.videoId, title.trim())}
                     className="rounded bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.1em] text-black hover:bg-accent-bright"
                   >
                     Open Video →

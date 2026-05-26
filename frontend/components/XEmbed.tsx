@@ -171,10 +171,15 @@ export function XEmbed({
       ref={containerRef}
       className="overflow-hidden rounded-xl border border-accent/20 bg-surface"
     >
-      <div className="relative bg-black p-2">
+      <div className="relative bg-black p-4">
+        {/*
+          X widgets render at a fixed pixel width (max ~550px), so we don't
+          stretch the iframe — we just give it generous whitespace and a
+          wider container, and let it center inside.
+        */}
         <div
           ref={mountRef}
-          className={`min-h-[320px] [&_iframe]:!mx-auto ${
+          className={`mx-auto min-h-[400px] w-full max-w-[600px] [&_iframe]:!mx-auto [&_iframe]:!w-full ${
             load.kind === "ready" ? "" : "invisible h-0"
           }`}
         />

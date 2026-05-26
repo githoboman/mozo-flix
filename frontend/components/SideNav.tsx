@@ -3,9 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import { MembershipModal } from "./MembershipModal";
-import { MovingBorderButton } from "./ui/moving-border";
 
 /**
  * Each category writes itself into the URL as ?cat= and ?sort= on /browse.
@@ -74,26 +72,19 @@ export function SideNav() {
               <Link
                 key={c.label}
                 href={buildHref(c)}
-                className={`relative flex items-center gap-3 pl-6 py-3 text-left font-ui text-[12px] font-semibold uppercase tracking-[0.15em] transition-colors ${
+                className={`flex items-center gap-3 pl-6 py-3 text-left font-ui text-[12px] font-semibold uppercase tracking-[0.15em] transition-colors ${
                   active
-                    ? "mr-4 font-black text-black"
+                    ? "mr-4 rounded-r-full bg-accent font-black text-black"
                     : "border-l-4 border-transparent text-muted hover:bg-white/5 hover:text-white"
                 }`}
               >
-                {active && (
-                  <motion.span
-                    layoutId="sidenav-active-pill"
-                    className="absolute inset-y-0 left-0 right-0 -z-0 rounded-r-full bg-accent"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                )}
                 <span
-                  className="material-symbols-outlined relative z-[1] text-[20px]"
+                  className="material-symbols-outlined text-[20px]"
                   style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
                 >
                   {c.icon}
                 </span>
-                <span className="relative z-[1]">{c.label}</span>
+                {c.label}
               </Link>
             );
           })}
@@ -109,14 +100,13 @@ export function SideNav() {
           )}
         </nav>
         <div className="mt-auto border-t border-accent-border p-6">
-          <MovingBorderButton
+          <button
+            type="button"
             onClick={() => setProOpen(true)}
-            containerClassName="w-full"
-            className="w-full px-4 py-3 text-[12px] tracking-[0.08em]"
-            duration={4200}
+            className="w-full rounded border border-accent py-3 font-ui text-[12px] font-bold uppercase tracking-[0.08em] text-accent transition hover:bg-accent hover:text-black"
           >
             Go Pro
-          </MovingBorderButton>
+          </button>
         </div>
       </aside>
 

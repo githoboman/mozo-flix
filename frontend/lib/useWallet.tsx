@@ -54,19 +54,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (inflight.current) return inflight.current;
 
     const p = (async () => {
-      const connected = checkConnected();
-      const address = connected ? getAddress() : null;
+      // Mobile in-app browsers and locked-down environments (SES, etc.) can
+      // make @stacks/connect throw. Never let that crash the (app) tree —
+      // fall back to disconnected state instead.
+      let connected = false;
+      let address: string | null = null;
+      try {
+        connected = checkConnected();
+        if (connected) address = getAddress();
+      } catch (e) {
+        console.warn("[wallet] connect check failed; treating as disconnected", e);
+      }
+
       let balance = 0n;
       if (address) {
         const cached = balanceCache.current.get(address);
         if (cached && Date.now() - cached.at < BALANCE_TTL_MS) {
           balance = cached.value;
         } else {
-          balance = await getStxBalance(address);
-          balanceCache.current.set(address, {
-            value: balance,
-            at: Date.now(),
-          });
+          try {
+            balance = await getStxBalance(address);
+            balanceCache.current.set(address, {
+              value: balance,
+              at: Date.now(),
+            });
+          } catch {
+            balance = 0n;
+          }
         }
       }
       setState({ connected, address, balance, loading: false });
@@ -75,6 +89,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     inflight.current = p;
     try {
       await p;
+    } catch (e) {
+      console.warn("[wallet] refresh failed", e);
+      setState({
+        connected: false,
+        address: null,
+        balance: 0n,
+        loading: false,
+      });
     } finally {
       inflight.current = null;
     }

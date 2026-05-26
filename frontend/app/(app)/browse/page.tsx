@@ -2,7 +2,6 @@
 
 import { SideNav } from "@/components/SideNav";
 import { VideoCard } from "@/components/VideoCard";
-import { RecommendedRail } from "@/components/RecommendedRail";
 import { SkeletonGrid } from "@/components/Skeleton";
 import { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -154,9 +153,6 @@ function BrowseInner() {
                   />
                 ))}
               </div>
-              {!hasFilter && (
-                <RecommendedRail limit={8} resolvedPool={resolved} />
-              )}
             </>
           )}
 

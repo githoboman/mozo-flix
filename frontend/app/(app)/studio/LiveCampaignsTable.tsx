@@ -13,7 +13,7 @@ import {
 import { useWallet } from "@/lib/useWallet";
 import { getVideoMeta } from "@/lib/videoMeta";
 import { useToast } from "@/components/Toast";
-import { explorerTxUrl } from "@/lib/format";
+import { explorerTxUrl, watchUrl } from "@/lib/format";
 import { friendlyError } from "@/lib/errorMessage";
 import type { Campaign } from "./page";
 
@@ -143,7 +143,7 @@ export function LiveCampaignsTable({
             >
               <div className="col-span-12 md:col-span-3">
                 <Link
-                  href={`/watch/${c.id}`}
+                  href={watchUrl(c.id, c.title)}
                   className="font-ui text-[14px] font-bold hover:text-accent"
                 >
                   {c.title}

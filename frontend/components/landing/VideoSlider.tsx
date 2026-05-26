@@ -5,6 +5,7 @@ import Link from "next/link";
 import { listVideos, type VideoMeta } from "@/lib/stacks-reads";
 import { microToStx } from "@/lib/stacks";
 import { useResolvedVideoList } from "@/lib/useVideoList";
+import { watchUrl } from "@/lib/format";
 
 export function LandingVideoSlider() {
   const [videos, setVideos] = useState<VideoMeta[] | null>(null);
@@ -67,7 +68,7 @@ export function LandingVideoSlider() {
               return (
                 <Link
                   key={v.id}
-                  href={`/watch/${v.id}`}
+                  href={watchUrl(v.id, title)}
                   className="card-reveal group block w-[300px] shrink-0 overflow-hidden rounded-xl border border-accent-border bg-card-2"
                 >
                   <div
