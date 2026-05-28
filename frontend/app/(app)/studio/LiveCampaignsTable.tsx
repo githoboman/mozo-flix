@@ -68,9 +68,18 @@ export function LiveCampaignsTable({
   };
 
   const onWithdraw = async (id: number) => {
+    const campaign = campaigns?.find((c) => c.id === id);
+    if (!campaign || campaign.balance <= 0n) {
+      toast.show({
+        kind: "info",
+        title: "Nothing to withdraw",
+        body: "This campaign's pool is already empty.",
+      });
+      return;
+    }
     setBusy({ id, action: "withdraw" });
     try {
-      await withdrawPool(id, (txId) => {
+      await withdrawPool(id, campaign.balance, (txId) => {
         toast.show({
           kind: "success",
           title: "Withdrawal submitted",
@@ -123,7 +132,7 @@ export function LiveCampaignsTable({
         // its own try/catch handles failure so a withdraw rejection
         // doesn't undo the deactivate success.
         try {
-          await withdrawPool(id, (withdrawTxId) => {
+          await withdrawPool(id, balance, (withdrawTxId) => {
             toast.show({
               kind: "success",
               title: "Withdrawal submitted",

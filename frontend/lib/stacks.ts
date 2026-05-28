@@ -244,13 +244,29 @@ export async function fundPool(
 
 export async function withdrawPool(
   videoId: number,
+  /**
+   * Current pool balance in µSTX. Used to construct a post-condition
+   * declaring the contract will send up to this much STX back to the
+   * caller. With PostConditionMode.Deny, omitting this would make the
+   * transaction roll back because the STX movement wasn't pre-declared.
+   */
+  expectedBalance: bigint,
   onSuccess?: (txId: string) => void,
 ) {
+  const contractPrincipal = `${CONTRACT_OWNER}.mozoflix-rewards-v2` as const;
+  // willSendLte is the right shape here — the contract sends `balance` and
+  // sets it to 0, but a race (e.g. a viewer claiming a reward between our
+  // read and the wallet sign) could shave a tiny bit off. Using <= rather
+  // than == survives that race.
+  const postCondition = Pc.principal(contractPrincipal)
+    .willSendLte(expectedBalance)
+    .ustx();
+
   await callContract(
     CONTRACTS.rewards,
     "withdraw-pool",
     [uintCV(videoId)],
-    [],
+    [postCondition],
     onSuccess,
   );
 }

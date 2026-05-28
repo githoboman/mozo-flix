@@ -549,9 +549,6 @@ export default function UploadPage() {
                   : `Publish + Fund ${pool} STX`}
               </Button>
             </div>
-            <button className="w-full rounded border border-white/10 py-3 font-ui text-[11px] uppercase tracking-[0.1em] text-muted hover:border-white/30 hover:text-white">
-              Save as draft
-            </button>
           </aside>
         </div>
       </main>
