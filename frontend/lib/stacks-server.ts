@@ -30,13 +30,27 @@ const CONTRACT_OWNER =
   "ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E";
 
 function getBackendKey(): string {
-  const key = process.env.BACKEND_PRIVATE_KEY;
-  if (!key) {
+  const raw = process.env.BACKEND_PRIVATE_KEY;
+  if (!raw) {
     throw new Error(
-      "BACKEND_PRIVATE_KEY not set. Add it to .env.local (server-side).",
+      "BACKEND_PRIVATE_KEY not set. Add it to your environment (Vercel → Settings → Environment Variables, marked Sensitive).",
     );
   }
-  return key;
+  // Strip whitespace / quotes / 0x prefix users sometimes paste in by accident.
+  // @stacks/transactions expects a bare hex string: 64 chars (uncompressed) or
+  // 66 chars (with a trailing `01` compression byte).
+  const cleaned = raw.trim().replace(/^["']|["']$/g, "").replace(/^0x/i, "");
+  if (!/^[0-9a-f]+$/i.test(cleaned)) {
+    throw new Error(
+      "BACKEND_PRIVATE_KEY isn't a hex string. Run `npx @stacks/cli make_keychain -t` and paste the `keyInfo.privateKey` value (no 0x prefix, no quotes).",
+    );
+  }
+  if (cleaned.length !== 64 && cleaned.length !== 66) {
+    throw new Error(
+      `BACKEND_PRIVATE_KEY has length ${cleaned.length} hex chars; expected 64 or 66. Make sure you pasted the raw private key (keyInfo.privateKey), not a mnemonic or address.`,
+    );
+  }
+  return cleaned;
 }
 
 async function callContract(
