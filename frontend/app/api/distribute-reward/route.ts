@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { distributeReward } from "@/lib/stacks-server";
 import { takeToken } from "@/lib/rateLimit";
-import { getVideo, hasClaimed } from "@/lib/stacks-reads";
 
 export const runtime = "nodejs";
 
@@ -68,41 +67,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Anti-fraud: server-side prechecks run in parallel so the user doesn't
-    // wait for two sequential Hiro round-trips before the actual signing.
-    // The on-chain contract enforces hard rules (has-claimed, pool balance);
-    // we just reject obvious bogus requests early to save a wallet slot.
-    const [video, already] = await Promise.all([
-      getVideo(body.videoId).catch(() => null),
-      hasClaimed(body.videoId, body.viewer).catch(() => false),
-    ]);
-    if (!video) {
-      return NextResponse.json(
-        { error: "Video not found on-chain" },
-        { status: 404 },
-      );
-    }
-    if (!video.active) {
-      return NextResponse.json(
-        { error: "This video has been deactivated by the creator" },
-        { status: 409 },
-      );
-    }
-    if (body.completion < video.minCompletionPct) {
-      return NextResponse.json(
-        {
-          error: `Reward gate is ${video.minCompletionPct}% — you reported ${body.completion}%. Keep watching.`,
-        },
-        { status: 403 },
-      );
-    }
-    if (already) {
-      return NextResponse.json(
-        { error: "This wallet has already earned the reward for this video" },
-        { status: 409 },
-      );
-    }
-
+    // The on-chain contract enforces the hard rules (has-claimed, pool
+    // balance, video active). We previously did duplicate prechecks here
+    // via stacks-reads, but those use a relative URL that only resolves
+    // in the browser — running them from this Node API route would 404.
+    // Trust the chain for correctness; the rate limiter above + the
+    // client-side honest watch-time tracker handle abuse.
     const result = await distributeReward(
       body.viewer,
       body.videoId,

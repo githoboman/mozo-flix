@@ -76,13 +76,14 @@ export function XEmbed({
     typeof document !== "undefined" ? !document.hidden : true,
   );
   const [inView, setInView] = useState(false);
-  /** Gate the engagement timer behind an explicit click. Stops the
-   *  progress bar from running just because the embed is on the page. */
-  const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const firedRef = useRef(false);
   const loaded = load.kind === "ready";
-  const running = loaded && started && tabActive && inView;
+  // X doesn't expose video playback state to embeds, so the closest proxy
+  // for "viewer is actually watching" is: the embed is mounted, the tab is
+  // focused, and the post is on screen. The timer pauses the moment any
+  // of those flips false (scroll away, switch tab, etc.).
+  const running = loaded && tabActive && inView;
 
   useEffect(() => {
     let cancel = false;
@@ -139,7 +140,6 @@ export function XEmbed({
 
   // Reset timer when post changes
   useEffect(() => {
-    setStarted(false);
     setElapsed(0);
     firedRef.current = false;
   }, [postId]);
@@ -213,45 +213,25 @@ export function XEmbed({
       </div>
 
       <div className="border-t border-white/5 px-4 py-3">
-        {loaded && !started ? (
-          // X doesn't expose playback state to embeds, so we require an
-          // explicit click before crediting watch time. Stops the bar from
-          // ticking just because the embed is on the page.
-          <div className="flex flex-col items-center gap-2 text-center">
-            <button
-              type="button"
-              onClick={() => setStarted(true)}
-              className="rounded bg-accent px-4 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black transition hover:bg-accent-bright"
-            >
-              ▶ Start the {thresholdSec}s engagement timer
-            </button>
-            <span className="font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
-              Press play on the post above, then start the timer
-            </span>
-          </div>
-        ) : (
-          <>
-            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
-              <span>X · engagement {Math.floor(pct)}%</span>
-              <span>
-                {!loaded
-                  ? "Embed not playing"
-                  : !tabActive
-                    ? "Paused (tab inactive)"
-                    : !inView
-                      ? "Paused (scrolled off-screen)"
-                      : "Watching…"}{" "}
-                · unlock at {thresholdSec}s
-              </span>
-            </div>
-          </>
-        )}
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full bg-gradient-to-r from-accent to-accent-bright shadow-[0_0_8px_rgba(255,107,0,0.7)] transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="mt-1.5 flex items-center justify-between font-ui text-[10px] uppercase tracking-[0.1em] text-muted">
+          <span>X · engagement {Math.floor(pct)}%</span>
+          <span>
+            {!loaded
+              ? "Embed loading"
+              : !tabActive
+                ? "Paused (tab inactive)"
+                : !inView
+                  ? "Paused (scrolled off-screen)"
+                  : "Watching…"}{" "}
+            · unlock at {thresholdSec}s
+          </span>
+        </div>
       </div>
     </div>
   );
