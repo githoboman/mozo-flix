@@ -24,9 +24,17 @@ export function LandingHero() {
         />
 
         <div className="relative z-[2] max-w-[680px]">
-          <div className="mb-8 inline-flex animate-fade-up items-center gap-2 rounded-full border border-accent-border bg-accent-dim px-4 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
-            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-accent" />
-            Built on Stacks · Bitcoin-Secured
+          <div className="mb-8 flex flex-wrap gap-2 animate-fade-up">
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-dim px-4 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
+              <span className="h-1.5 w-1.5 animate-blink rounded-full bg-accent" />
+              Built on Stacks · Bitcoin-Secured
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-dim px-4 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
+              <span className="material-symbols-outlined text-[14px]">
+                auto_awesome
+              </span>
+              AI-Powered
+            </span>
           </div>
 
           <h1 className="mb-7 animate-fade-up font-display leading-[0.92] tracking-[0.02em] text-[clamp(48px,9vw,140px)]">

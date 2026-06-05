@@ -1,6 +1,7 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/Hero";
 import { LandingHow } from "@/components/landing/How";
+import { LandingAI } from "@/components/landing/AI";
 import { LandingVideoSlider } from "@/components/landing/VideoSlider";
 import { LandingEarn } from "@/components/landing/Earn";
 import { LandingStacks } from "@/components/landing/Stacks";
@@ -21,6 +22,9 @@ export default function Home() {
         </ScrollReveal>
         <ScrollReveal>
           <LandingHow />
+        </ScrollReveal>
+        <ScrollReveal>
+          <LandingAI />
         </ScrollReveal>
         <ScrollReveal>
           <LandingEarn />

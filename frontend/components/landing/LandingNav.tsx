@@ -41,6 +41,12 @@ export function LandingNav() {
           How it works
         </a>
         <a
+          href="#ai"
+          className="font-ui text-[11px] font-semibold uppercase tracking-[0.12em] text-muted transition-colors hover:text-accent"
+        >
+          AI
+        </a>
+        <a
           href="#earn"
           className="font-ui text-[11px] font-semibold uppercase tracking-[0.12em] text-muted transition-colors hover:text-accent"
         >
