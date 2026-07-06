@@ -69,14 +69,79 @@ export function ipfsToUrls(input?: string | null): string[] {
   ].filter((u) => !isBanned(u));
 }
 
-/** Upload a File to our /api/ipfs-upload route. Returns the CID. */
-export async function uploadToIPFS(file: File): Promise<{ cid: string; url: string }> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/ipfs-upload", { method: "POST", body: form });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Upload failed: ${res.status} ${txt}`);
+/**
+ * Upload a File to IPFS via Pinata. Uses a browser-direct flow:
+ *  1. Ask our server to mint a single-use, scoped Pinata API key
+ *  2. Upload the file DIRECTLY from the browser to api.pinata.cloud
+ *
+ * This bypasses Vercel's 4.5 MB serverless function body limit — the
+ * previous /api/ipfs-upload route was 500-ing on every real video because
+ * it tried to stream the file through Vercel first. XHR is used instead
+ * of fetch so we can report progress.
+ */
+export async function uploadToIPFS(
+  file: File,
+  opts: { onProgress?: (pct: number) => void } = {},
+): Promise<{ cid: string; url: string; size: number }> {
+  // 1. Mint a short-lived upload key
+  const keyRes = await fetch("/api/pinata-signed-key", { method: "POST" });
+  if (!keyRes.ok) {
+    const body = await keyRes.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ??
+        `Couldn't mint upload key (HTTP ${keyRes.status})`,
+    );
   }
-  return (await res.json()) as { cid: string; url: string };
+  const { jwt } = (await keyRes.json()) as { jwt: string };
+
+  // 2. Direct-upload to Pinata with progress reporting
+  return await new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append(
+      "pinataMetadata",
+      JSON.stringify({
+        name: file.name,
+        keyvalues: { source: "mozoflix", uploadedAt: Date.now().toString() },
+      }),
+    );
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://api.pinata.cloud/pinning/pinFileToIPFS");
+    xhr.setRequestHeader("Authorization", `Bearer ${jwt}`);
+
+    xhr.upload.onprogress = (e) => {
+      if (!e.lengthComputable || !opts.onProgress) return;
+      opts.onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onerror = () => reject(new Error("Network error uploading to Pinata"));
+    xhr.ontimeout = () => reject(new Error("Upload timed out"));
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        let msg = `Pinata rejected upload (HTTP ${xhr.status})`;
+        try {
+          const parsed = JSON.parse(xhr.responseText) as {
+            error?: { reason?: string; details?: string };
+          };
+          if (parsed.error?.reason)
+            msg = `Pinata: ${parsed.error.reason}${
+              parsed.error.details ? " — " + parsed.error.details : ""
+            }`;
+        } catch {}
+        reject(new Error(msg));
+        return;
+      }
+      try {
+        const data = JSON.parse(xhr.responseText) as {
+          IpfsHash: string;
+          PinSize: number;
+        };
+        const url = `${PUBLIC_GATEWAY}/ipfs/${data.IpfsHash}`;
+        resolve({ cid: data.IpfsHash, url, size: data.PinSize });
+      } catch (e) {
+        reject(new Error(`Bad response from Pinata: ${(e as Error).message}`));
+      }
+    };
+    xhr.send(form);
+  });
 }

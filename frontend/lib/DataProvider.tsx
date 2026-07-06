@@ -24,6 +24,7 @@ import {
   type VideoMeta,
   type PoolState,
 } from "./stacks-reads";
+import { reconcilePendingUploads } from "./pendingUploads";
 
 const CACHE_MS = 30_000;
 
@@ -74,6 +75,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           setVideos(list);
           setVideosLoading(false);
           inflight.current.videos = null;
+          // Remove any pending upload rows now that they're on-chain
+          reconcilePendingUploads(list.map((v) => v.id));
           return list;
         })
         .catch((e) => {

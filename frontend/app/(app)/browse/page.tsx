@@ -3,6 +3,7 @@
 import { SideNav } from "@/components/SideNav";
 import { VideoCard } from "@/components/VideoCard";
 import { SkeletonGrid } from "@/components/Skeleton";
+import { PendingUploadsBar } from "@/components/PendingUploadsBar";
 import { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type VideoMeta } from "@/lib/stacks-reads";
@@ -125,6 +126,8 @@ function BrowseInner() {
               />
             </div>
           </div>
+
+          <PendingUploadsBar />
 
           {error ? (
             <ErrorCard message={error} />

@@ -5,6 +5,7 @@ import { useWallet } from "@/lib/useWallet";
 import { registerAndFund, stxToMicro } from "@/lib/stacks";
 import { getNextVideoId } from "@/lib/stacks-reads";
 import { setVideoMeta } from "@/lib/videoMeta";
+import { addPendingUpload } from "@/lib/pendingUploads";
 import { uploadToIPFS } from "@/lib/ipfs";
 import { RewardSuggestionWidget } from "@/components/RewardSuggestion";
 import { AIUploadAssistant } from "@/components/AIUploadAssistant";
@@ -82,8 +83,10 @@ export default function UploadPage() {
           setStatus({ kind: "error", message: "Pick a video file first." });
           return;
         }
-        setStatus({ kind: "uploading" });
-        const { cid } = await uploadToIPFS(file);
+        setStatus({ kind: "uploading", pct: 0 });
+        const { cid } = await uploadToIPFS(file, {
+          onProgress: (pct) => setStatus({ kind: "uploading", pct }),
+        });
         resolvedVideoCid = cid;
         manifestSource = {
           type: "ipfs",
@@ -155,6 +158,9 @@ export default function UploadPage() {
         stxToMicro(pool),
         wallet.address,
         async (registerTx) => {
+          const thumbnailForCard = thumbnailCid
+            ? `ipfs://${thumbnailCid}`
+            : thumbPreview ?? undefined;
           setVideoMeta({
             id: expectedId,
             title: title.trim(),
@@ -164,11 +170,23 @@ export default function UploadPage() {
             videoFormat: sourceType === "file" ? "mp4" : undefined,
             // Prefer the pinned CID (cross-browser), fall back to the in-memory
             // preview URL so the uploader sees their thumb on /browse instantly.
-            thumbnail: thumbnailCid
-              ? `ipfs://${thumbnailCid}`
-              : thumbPreview ?? undefined,
+            thumbnail: thumbnailForCard,
             uploadedAt: Date.now(),
             uploaderAddress: wallet.address!,
+          });
+          // Persist a "pending" record so /browse and /library show the video
+          // as a Registering-on-chain card until the tx confirms (~10 min).
+          // Without this, testers see "success" and then nothing appears.
+          addPendingUpload({
+            expectedId,
+            title: title.trim(),
+            category,
+            registerTx,
+            manifestCid,
+            videoCid: resolvedVideoCid,
+            thumbnail: thumbnailForCard,
+            uploaderAddress: wallet.address!,
+            createdAt: Date.now(),
           });
           setStatus({
             kind: "done",
@@ -469,7 +487,18 @@ export default function UploadPage() {
             )}
             {status.kind === "uploading" && (
               <div className="rounded border border-accent/40 bg-accent-dim p-3 text-[12px] text-accent">
-                📤 Uploading video to IPFS…
+                <div className="mb-2 flex items-center justify-between">
+                  <span>📤 Uploading video to IPFS…</span>
+                  <span className="font-mono">
+                    {status.pct != null ? `${status.pct}%` : ""}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/40">
+                  <div
+                    className="h-full bg-accent transition-all"
+                    style={{ width: `${status.pct ?? 5}%` }}
+                  />
+                </div>
               </div>
             )}
             {status.kind === "pinning-manifest" && (
