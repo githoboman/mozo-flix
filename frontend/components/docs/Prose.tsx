@@ -28,20 +28,20 @@ export function DocPage({
   return (
     <div className="max-w-[68ch]">
       {eyebrow && (
-        <div className="mb-3 flex items-center gap-3 font-ui text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
-          <span className="block h-0.5 w-6 bg-accent" />
+        <div className="mb-3 flex items-center gap-2.5 font-ui text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
+          <span aria-hidden className="block h-0.5 w-6 bg-accent" />
           {eyebrow}
         </div>
       )}
-      <h1 className="mb-4 font-display text-[clamp(36px,5vw,56px)] leading-[1.05] tracking-[0.01em]">
+      <h1 className="mb-3 font-display text-[clamp(30px,7vw,52px)] leading-[1.08] tracking-[0.01em] md:mb-4">
         {title}
       </h1>
       {intro && (
-        <p className="mb-10 text-[17px] font-light leading-[1.7] text-muted">
+        <p className="mb-8 text-[15px] font-light leading-[1.7] text-muted md:mb-10 md:text-[17px]">
           {intro}
         </p>
       )}
-      <div className="doc-body space-y-6">{children}</div>
+      <div className="doc-body space-y-5 md:space-y-6">{children}</div>
     </div>
   );
 }
@@ -50,7 +50,7 @@ export function DocH2({ children, id }: { children: ReactNode; id?: string }) {
   return (
     <h2
       id={id}
-      className="mt-12 scroll-mt-24 font-display text-[clamp(24px,3vw,32px)] leading-[1.15] tracking-[0.01em]"
+      className="mt-10 scroll-mt-24 font-display text-[clamp(22px,4.5vw,32px)] leading-[1.2] tracking-[0.01em] md:mt-12"
     >
       {children}
     </h2>
@@ -61,7 +61,7 @@ export function DocH3({ children, id }: { children: ReactNode; id?: string }) {
   return (
     <h3
       id={id}
-      className="mt-8 scroll-mt-24 font-ui text-[18px] font-bold uppercase tracking-[0.05em] text-white"
+      className="mt-6 scroll-mt-24 font-ui text-[15px] font-bold uppercase tracking-[0.05em] text-white md:mt-8 md:text-[18px]"
     >
       {children}
     </h3>
@@ -70,7 +70,7 @@ export function DocH3({ children, id }: { children: ReactNode; id?: string }) {
 
 export function DocP({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[15px] font-light leading-[1.75] text-white/85">
+    <p className="text-[14px] font-light leading-[1.7] text-white/85 md:text-[15px] md:leading-[1.75]">
       {children}
     </p>
   );

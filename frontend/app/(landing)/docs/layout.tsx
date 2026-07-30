@@ -15,8 +15,8 @@ export default function DocsLayout({
   return (
     <>
       <LandingNav />
-      <main className="mx-auto max-w-[1200px] px-4 pt-[100px] pb-16 sm:px-6 md:px-10 md:pt-[120px]">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr] md:gap-12">
+      <main className="mx-auto max-w-[1200px] px-4 pt-[80px] pb-16 sm:px-6 md:px-10 md:pt-[120px]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr] md:gap-12">
           <aside className="md:sticky md:top-[100px] md:h-fit md:self-start">
             <DocsSidebar />
           </aside>

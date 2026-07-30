@@ -30,6 +30,7 @@ export function LandingNav() {
     setMobileOpen(false);
   }, [pathname]);
 
+  const inDocs = pathname.startsWith("/docs");
   const anchorLinks = isLandingRoot
     ? [
         { href: "#how", label: "How it works" },
@@ -38,6 +39,12 @@ export function LandingNav() {
         { href: "#stacks", label: "Stacks" },
       ]
     : [];
+
+  // Logo goes to the closest "home" for the current section — /docs when
+  // reading docs, / when on marketing. Standard behaviour for platforms
+  // that have distinct product surfaces (Stripe, Vercel, Linear all do
+  // this). Prevents an accidental context-switch mid-read.
+  const logoHref = inDocs ? "/docs" : "/";
 
   return (
     <nav
@@ -58,10 +65,16 @@ export function LandingNav() {
           </span>
         </button>
         <Link
-          href="/"
+          href={logoHref}
+          aria-label={inDocs ? "MOZOflix Docs home" : "MOZOflix home"}
           className="shrink-0 rounded font-display text-2xl tracking-[0.05em] text-white transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg md:text-3xl"
         >
           MOZO<span className="text-accent">flix</span>
+          {inDocs && (
+            <span className="ml-2 hidden font-ui text-[11px] font-semibold uppercase tracking-[0.15em] text-muted md:inline">
+              / Docs
+            </span>
+          )}
         </Link>
       </div>
 
