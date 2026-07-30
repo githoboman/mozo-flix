@@ -68,11 +68,11 @@ export function NotificationBell() {
               <div className="px-5 py-8 text-center">
                 <div className="mb-1 text-2xl">🔔</div>
                 <div className="font-ui text-[11px] uppercase tracking-[0.1em] text-muted">
-                  {isFirebaseConfigured ? "All caught up" : "No notifications"}
+                  All caught up
                 </div>
                 {!isFirebaseConfigured && (
                   <p className="mt-2 text-[10px] text-muted/60">
-                    Configure Firebase to enable activity feed
+                    Activity feed shipping in v2
                   </p>
                 )}
               </div>

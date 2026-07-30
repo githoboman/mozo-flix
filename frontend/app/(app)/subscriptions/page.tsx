@@ -24,9 +24,9 @@ export default function SubscriptionsPage() {
           />
         ) : !isFirebaseConfigured ? (
           <Empty
-            title="Subscriptions need Firebase"
-            body="Subscription data lives off-chain. Add NEXT_PUBLIC_FIREBASE_* to your .env.local to enable this view. Until then it's blank."
-            mono
+            title="Subscriptions coming in v2"
+            body="Following, subscriber-only content, and creator notifications ship with the social layer. Browse videos and fund rewards in the meantime."
+            cta={{ href: "/browse", label: "Browse Videos →" }}
           />
         ) : (
           <Empty

@@ -24,9 +24,8 @@ export default function NotificationsPage() {
           />
         ) : !isFirebaseConfigured ? (
           <Empty
-            title="Notifications need Firebase"
-            body="Off-chain activity feed (subscribers, comments, replies, streak reminders) lives in Firestore. Configure NEXT_PUBLIC_FIREBASE_* in .env.local to turn this on."
-            mono
+            title="Activity feed coming in v2"
+            body="Subscribers, comments, replies, and streak reminders will show up here once the social layer ships. On-chain earnings already show on your dashboard."
           />
         ) : (
           <Empty

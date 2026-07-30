@@ -94,12 +94,12 @@ export function CommentsSection() {
         <div className="rounded-xl border border-white/5 bg-surface p-8 text-center">
           <div className="mb-2 text-3xl">💬</div>
           <div className="font-ui text-[12px] uppercase tracking-[0.15em] text-muted">
-            {isFirebaseConfigured ? "Be the first to comment" : "Comments need Firebase"}
+            Be the first to comment
           </div>
           {!isFirebaseConfigured && (
             <p className="mx-auto mt-2 max-w-md text-[11px] font-light text-muted/60">
-              Set <code className="text-accent">NEXT_PUBLIC_FIREBASE_*</code> in
-              .env.local to enable comments. Until then this thread is empty.
+              Comments are shipping in v2. Follow the video pool on-chain
+              in the meantime.
             </p>
           )}
         </div>

@@ -165,8 +165,8 @@ export default function StudioPage() {
               <span>100%</span>
             </div>
             <p className="mt-3 text-[10px] text-muted/60">
-              Demo curve — real retention requires watch-event aggregation
-              (coming with Firebase wiring).
+              Demo curve — real per-video retention aggregation ships with
+              the v2 analytics layer.
             </p>
           </div>
 

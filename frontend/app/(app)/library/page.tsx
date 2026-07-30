@@ -178,7 +178,7 @@ function EmptyState({ tab }: { tab: string }) {
     "Continue Watching":
       "Press play on any video and we'll remember where you left off. Resume from any device once you're signed in.",
     History:
-      "Every video you watch shows up here, with the exact second you stopped. Nothing leaves your browser unless Firebase is connected.",
+      "Every video you watch shows up here, with the exact second you stopped. Your history stays on this device — cross-device sync ships with the v2 social layer.",
     "Watch Later":
       "See something you'll get to later? Tap the bookmark — it'll wait right here.",
     Liked:
