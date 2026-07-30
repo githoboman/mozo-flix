@@ -7,6 +7,7 @@ import { getNextVideoId } from "@/lib/stacks-reads";
 import { setVideoMeta } from "@/lib/videoMeta";
 import { addPendingUpload } from "@/lib/pendingUploads";
 import { uploadToIPFS } from "@/lib/ipfs";
+import { moderateVideoFile } from "@/lib/moderation";
 import { RewardSuggestionWidget } from "@/components/RewardSuggestion";
 import { AIUploadAssistant } from "@/components/AIUploadAssistant";
 import { ThumbnailPicker } from "@/components/ThumbnailPicker";
@@ -46,6 +47,7 @@ export default function UploadPage() {
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<
     | { kind: "idle" }
+    | { kind: "moderating" }
     | { kind: "uploading"; pct?: number }
     | { kind: "pinning-manifest"; videoCid: string }
     | { kind: "registering"; manifestCid: string }
@@ -56,6 +58,7 @@ export default function UploadPage() {
         videoCid: string;
         videoId: number;
       }
+    | { kind: "rejected"; reasons: string[] }
     | { kind: "error"; message: string }
   >({ kind: "idle" });
 
@@ -83,6 +86,38 @@ export default function UploadPage() {
           setStatus({ kind: "error", message: "Pick a video file first." });
           return;
         }
+        // Pre-upload AI moderation: extract 5 frames and classify with
+        // Claude Haiku vision. If any category exceeds threshold we reject
+        // BEFORE the file hits IPFS or the on-chain register-and-fund tx.
+        // This keeps illegal content out of both our platform surface AND
+        // out of the reward flow. YouTube/X sources inherit their
+        // platform's moderation, so we skip this step for those.
+        setStatus({ kind: "moderating" });
+        try {
+          const verdict = await moderateVideoFile(file);
+          if (verdict.decision === "reject") {
+            setStatus({ kind: "rejected", reasons: verdict.reasons });
+            toast.show({
+              kind: "error",
+              title: "Video rejected by content policy",
+              body: verdict.reasons.length
+                ? verdict.reasons.slice(0, 2).join(" · ")
+                : "The video didn't pass our automated content check.",
+            });
+            return;
+          }
+        } catch (e) {
+          // If the moderation service itself is down, don't block honest
+          // creators. Surface a warning + continue. We can retighten this
+          // (fail-closed) if abuse becomes a problem.
+          console.warn("[moderation] service unavailable, allowing:", e);
+          toast.show({
+            kind: "info",
+            title: "Moderation service unavailable",
+            body: "Continuing with upload — this video may be re-reviewed post-publish.",
+          });
+        }
+
         setStatus({ kind: "uploading", pct: 0 });
         const { cid } = await uploadToIPFS(file, {
           onProgress: (pct) => setStatus({ kind: "uploading", pct }),
@@ -485,6 +520,32 @@ export default function UploadPage() {
                 {status.message}
               </div>
             )}
+            {status.kind === "moderating" && (
+              <div className="rounded border border-accent/40 bg-accent-dim p-3 text-[12px] text-accent">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-accent" />
+                  🔎 Running content check on video frames…
+                </div>
+                <div className="mt-1 text-[10px] font-light text-muted">
+                  Takes a few seconds. We scan for nudity, gore, violence, drugs, and hate symbols before pinning.
+                </div>
+              </div>
+            )}
+            {status.kind === "rejected" && (
+              <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-[12px] text-red-300">
+                <div className="mb-1 flex items-center gap-2 font-semibold">
+                  🚫 Video rejected by content policy
+                </div>
+                <div className="text-[11px] font-light text-red-200/80">
+                  {status.reasons.length > 0
+                    ? status.reasons.join(" · ")
+                    : "The video didn't pass our automated content check."}
+                </div>
+                <div className="mt-2 text-[10px] font-light text-red-200/60">
+                  If you believe this was a false positive, pick a different video or contact support with the file hash.
+                </div>
+              </div>
+            )}
             {status.kind === "uploading" && (
               <div className="rounded border border-accent/40 bg-accent-dim p-3 text-[12px] text-accent">
                 <div className="mb-2 flex items-center justify-between">
@@ -537,6 +598,7 @@ export default function UploadPage() {
                 fullWidth
                 size="lg"
                 loading={
+                  status.kind === "moderating" ||
                   status.kind === "uploading" ||
                   status.kind === "pinning-manifest" ||
                   status.kind === "registering"
@@ -547,7 +609,8 @@ export default function UploadPage() {
                   (sourceType === "file" && !file) ||
                   (sourceType === "youtube" && !parseYouTubeUrl(ytUrl)) ||
                   (sourceType === "x" && !parseXUrl(xUrl)) ||
-                  status.kind === "done"
+                  status.kind === "done" ||
+                  status.kind === "rejected"
                 }
                 trailingIcon={
                   status.kind === "done"
@@ -557,7 +620,9 @@ export default function UploadPage() {
                     : "arrow_forward"
                 }
               >
-                {status.kind === "uploading"
+                {status.kind === "moderating"
+                  ? "Checking content…"
+                  : status.kind === "uploading"
                   ? "Uploading to IPFS…"
                   : status.kind === "pinning-manifest"
                   ? "Pinning manifest…"

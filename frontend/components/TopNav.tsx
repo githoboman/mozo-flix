@@ -15,6 +15,7 @@ const VIEWER_LINKS = [
   { href: "/browse", label: "Browse" },
   { href: "/library", label: "Library" },
   { href: "/dashboard", label: "Earnings" },
+  { href: "/docs", label: "Docs" },
 ];
 const CREATOR_LINKS = [{ href: "/studio", label: "Studio" }];
 

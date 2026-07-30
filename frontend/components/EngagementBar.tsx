@@ -3,21 +3,27 @@
 import { useState } from "react";
 import { TipModal } from "./TipModal";
 import { ShareModal } from "./ShareModal";
+import { ReportModal } from "./ReportModal";
 
 export function EngagementBar({
   likes = 1247,
   creator,
   creatorAddress,
+  videoId,
+  videoTitle,
 }: {
   likes?: number;
   creator?: string;
   creatorAddress?: string;
+  videoId?: number;
+  videoTitle?: string;
 }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const likeCount = likes + (liked ? 1 : 0);
 
@@ -88,7 +94,13 @@ export function EngagementBar({
           fill={saved}
           onClick={() => setSaved((v) => !v)}
         />
-        <Btn icon="flag" label="Report" />
+        {videoId != null && (
+          <Btn
+            icon="flag"
+            label="Report"
+            onClick={() => setReportOpen(true)}
+          />
+        )}
       </div>
       <TipModal
         open={tipOpen}
@@ -97,6 +109,14 @@ export function EngagementBar({
         creatorAddress={creatorAddress}
       />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
+      {videoId != null && (
+        <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          videoId={videoId}
+          videoTitle={videoTitle}
+        />
+      )}
     </>
   );
 }

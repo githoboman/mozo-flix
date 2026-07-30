@@ -97,8 +97,21 @@ export default function StudioPage() {
           Channel <span className="text-accent">Analytics</span>
         </h1>
         {wallet.address && (
-          <div className="mb-10">
+          <div className="mb-10 flex flex-wrap items-center gap-3">
             <AddressChip address={wallet.address} label="Owner" />
+            {wallet.address ===
+              (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
+                "ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E") && (
+              <a
+                href="/studio/moderation"
+                className="inline-flex items-center gap-2 rounded border border-accent/30 bg-accent-dim px-3 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.1em] text-accent transition hover:border-accent hover:bg-accent hover:text-black"
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  shield
+                </span>
+                Moderation
+              </a>
+            )}
           </div>
         )}
         {!wallet.connected && !wallet.loading && (

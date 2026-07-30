@@ -48,13 +48,32 @@ export default function WatchPage() {
     | { kind: "failed"; message: string }
   >({ kind: "idle" });
   const [alreadyClaimed, setAlreadyClaimed] = useState(false);
+  const [platformHidden, setPlatformHidden] = useState(false);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
       try {
-        const v = await getVideo(videoId);
+        // Check the moderation hidden set in parallel with the on-chain read.
+        // If this video was hidden by an admin, we show a moderation notice
+        // and skip loading the rest of the page (no player, no reward flow).
+        const [v, hiddenRes] = await Promise.all([
+          getVideo(videoId),
+          fetch("/api/moderation/hidden")
+            .then((r) => (r.ok ? r.json() : { ids: [] }))
+            .catch(() => ({ ids: [] })),
+        ]);
         if (cancel) return;
+        const hiddenIds: number[] = Array.isArray(
+          (hiddenRes as { ids?: number[] }).ids,
+        )
+          ? (hiddenRes as { ids: number[] }).ids
+          : [];
+        if (hiddenIds.includes(videoId)) {
+          setPlatformHidden(true);
+          setLoading(false);
+          return;
+        }
         if (!v) {
           setError(`Video #${videoId} not found on-chain.`);
           setLoading(false);
@@ -106,7 +125,28 @@ export default function WatchPage() {
         <main className="relative flex-1 overflow-y-auto pt-[64px] md:pt-[60px] lg:ml-64">
           <div className="pointer-events-none absolute left-1/2 top-0 z-0 h-[800px] w-[800px] -translate-x-1/2 bg-[radial-gradient(circle,rgba(255,107,0,0.15)_0%,rgba(10,10,24,0)_70%)]" />
           <div className="relative z-10 mx-auto max-w-[1600px] p-4 sm:p-6 md:p-8 lg:p-grid_unit">
-            {error ? (
+            {platformHidden ? (
+              <div className="mx-auto max-w-[560px] rounded-2xl border border-red-500/40 bg-red-500/5 p-10 text-center">
+                <span className="material-symbols-outlined mb-3 text-5xl text-red-300">
+                  shield_lock
+                </span>
+                <div className="mb-2 font-display text-h2 text-red-300">
+                  This video has been hidden
+                </div>
+                <p className="mb-5 text-[13px] font-light text-red-200/80">
+                  A MOZOflix moderator has removed this video from the
+                  platform pending review. Rewards are paused. If you
+                  believe this was a mistake, contact support with the
+                  video id.
+                </p>
+                <a
+                  href="/browse"
+                  className="inline-block font-ui text-[12px] uppercase tracking-[0.15em] text-accent hover:text-accent-bright"
+                >
+                  ← Back to Browse
+                </a>
+              </div>
+            ) : error ? (
               <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-12 text-center">
                 <div className="mb-2 font-display text-h2 text-red-300">
                   {error}
@@ -379,6 +419,8 @@ export default function WatchPage() {
                     likes={pool?.claimCount ?? 0}
                     creator={hasProfileName ? creatorName : undefined}
                     creatorAddress={video?.creator}
+                    videoId={videoId}
+                    videoTitle={title}
                   />
                   <CommentsSection />
                 </div>

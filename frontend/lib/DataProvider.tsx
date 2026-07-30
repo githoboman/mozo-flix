@@ -27,6 +27,23 @@ import {
 import { reconcilePendingUploads } from "./pendingUploads";
 
 const CACHE_MS = 30_000;
+const HIDDEN_CACHE_MS = 15_000;
+
+/**
+ * Fetch the platform's hidden video id set. Failures are non-fatal — we
+ * fail-open (show all videos) if the moderation service is unreachable,
+ * to prevent a downed KV from breaking discovery.
+ */
+async function fetchHiddenIds(): Promise<Set<number>> {
+  try {
+    const res = await fetch("/api/moderation/hidden");
+    if (!res.ok) return new Set();
+    const data = (await res.json()) as { ids: number[] };
+    return new Set(Array.isArray(data.ids) ? data.ids : []);
+  } catch {
+    return new Set();
+  }
+}
 
 type Cached<T> = { value: T; expires: number };
 
@@ -52,6 +69,7 @@ export function useData() {
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const videoCache = useRef<Cached<VideoMeta[]> | null>(null);
+  const hiddenCache = useRef<Cached<Set<number>> | null>(null);
   const poolCache = useRef<Map<number, Cached<PoolState>>>(new Map());
   const inflight = useRef<{ videos: Promise<VideoMeta[]> | null }>({
     videos: null,
@@ -69,14 +87,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (inflight.current.videos) return inflight.current.videos;
 
       setVideosLoading(true);
-      const p = readListVideos()
-        .then((list) => {
+      // Fetch the on-chain list AND the platform's hidden set in parallel.
+      // Filter the hidden ids out so no downstream consumer (browse grid,
+      // channel page, recommendations, search) has to know moderation
+      // exists — hidden videos simply don't appear.
+      const p = Promise.all([
+        readListVideos(),
+        force || !hiddenCache.current || hiddenCache.current.expires <= now
+          ? fetchHiddenIds()
+          : Promise.resolve(hiddenCache.current.value),
+      ])
+        .then(([rawList, hidden]) => {
+          hiddenCache.current = {
+            value: hidden,
+            expires: now + HIDDEN_CACHE_MS,
+          };
+          const list = rawList.filter((v) => !hidden.has(v.id));
           videoCache.current = { value: list, expires: now + CACHE_MS };
           setVideos(list);
           setVideosLoading(false);
           inflight.current.videos = null;
           // Remove any pending upload rows now that they're on-chain
-          reconcilePendingUploads(list.map((v) => v.id));
+          reconcilePendingUploads(rawList.map((v) => v.id));
           return list;
         })
         .catch((e) => {
