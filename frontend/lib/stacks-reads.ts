@@ -85,7 +85,24 @@ async function callReadOnly(
         cause?: string;
       };
       if (!data.okay) {
-        throw new Error(`Contract call failed: ${data.cause ?? "unknown"}`);
+        // Recognise the specific "contracts aren't deployed" failure and
+        // hand back a plain-language, actionable message. Stacks testnet
+        // is periodically reset (Nakamoto activations, chain migrations)
+        // — when that happens every previously-deployed contract vanishes
+        // and the frontend keeps calling into a dead address. Without
+        // this branch users see a raw Clarity trace and think it's a
+        // frontend bug.
+        const cause = data.cause ?? "unknown";
+        if (/NoSuchContract/i.test(cause)) {
+          const network = isMainnet ? "mainnet" : "testnet";
+          throw new Error(
+            `The MOZOflix contracts aren't deployed at ${CONTRACT_OWNER} on ${network}. ` +
+              `This usually means the Stacks ${network} was reset — the address exists but has zero transactions. ` +
+              `Fix: redeploy the contracts (see contracts/DEPLOY.md → 'clarinet deployments apply --testnet') ` +
+              `or point NEXT_PUBLIC_CONTRACT_ADDRESS at a live deployer address.`,
+          );
+        }
+        throw new Error(`Contract call failed: ${cause}`);
       }
       const cv = deserializeCV(data.result!);
       return cvToJSON(cv);
@@ -104,6 +121,12 @@ async function callReadOnly(
         functionName,
         error: msg,
       });
+      // Preserve the actionable message from the NoSuchContract branch
+      // verbatim (don't append `(called ...)` — the whole point is the
+      // user needs to redeploy, not know which read failed first).
+      if (/testnet was reset|contracts aren't deployed/i.test(msg)) {
+        throw e;
+      }
       throw new Error(
         `${msg} (called ${contractName}.${functionName})`,
       );

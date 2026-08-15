@@ -18,30 +18,24 @@ import {
 } from "./stacks";
 import { getStxBalance } from "./stacks-reads";
 import {
-  useAccount as useEvmAccount,
-  useBalance as useEvmBalance,
-  useDisconnect as useEvmDisconnect,
-} from "wagmi";
-import {
   CHAINS,
   defaultChain,
-  getChainByEvmChainId,
   type ChainConfig,
   type ChainKind,
 } from "./chains";
 
 /**
- * Chain-agnostic wallet state. `useWallet()` still returns the same
- * top-level fields the app has always relied on (address, balance,
- * connected), but now also carries `chain` + `kind` so downstream code
- * can dispatch on Stacks vs EVM without duplicating the hook.
+ * Chain-agnostic wallet context. Exposes the same top-level fields the
+ * app has always relied on (address, balance, connected), plus `chain`
+ * and `kind` so downstream code can dispatch on Stacks vs EVM without
+ * duplicating the hook.
  *
- * Precedence when both are connected:
- *   1. Whichever the user most recently connected (last-write-wins).
- *   2. Falls back to Stacks if we can't tell.
- *
- * All balances are in the chain's smallest unit (µSTX for Stacks, wei
- * or token base units for EVM). Callers format via lib/format.
+ * NOTE (2026-08-13): EVM support is temporarily neutered while we
+ * rebuild the wagmi + ConnectKit setup without the Coinbase Base Account
+ * connector (which was pulling in unresolvable @x402/* deps and breaking
+ * production builds). The `evm` sub-object is still exposed so callers
+ * can keep referencing it — it just always reports disconnected. When
+ * we restore EVM, only this file + lib/EvmProvider.tsx need to change.
  */
 type WalletKind = ChainKind;
 
@@ -58,9 +52,7 @@ type WalletContextValue = WalletState & {
   connect: () => void;
   disconnect: () => void;
   refresh: () => Promise<void>;
-  /** True when either a Stacks or EVM wallet is currently connected. */
   anyConnected: boolean;
-  /** Raw sub-states for pages that need to show both simultaneously. */
   stacks: { connected: boolean; address: string | null; balance: bigint };
   evm: {
     connected: boolean;
@@ -72,11 +64,9 @@ type WalletContextValue = WalletState & {
 
 const Ctx = createContext<WalletContextValue | null>(null);
 
-/** Balance is fairly stable; cache for 30s to avoid refetching on navigation. */
 const BALANCE_TTL_MS = 30_000;
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  // ---------- Stacks state ----------
   const [stx, setStx] = useState({
     connected: false,
     address: null as string | null,
@@ -94,8 +84,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     const p = (async () => {
       // Mobile in-app browsers and locked-down environments (SES, etc.) can
-      // make @stacks/connect throw. Never let that crash the (app) tree —
-      // fall back to disconnected state instead.
+      // make @stacks/connect throw. Never let that crash the (app) tree.
       let connected = false;
       let address: string | null = null;
       try {
@@ -152,108 +141,37 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     });
   }, [refresh]);
 
-  // ---------- EVM state (wagmi) ----------
-  //
-  // These hooks are safe to call even when no EVM chains are enabled
-  // because EvmProvider degrades to a pass-through — the wagmi context
-  // stays default (disconnected). We defensively try/catch anyway so a
-  // wagmi bug can never take the whole app down.
-  let evmAddress: `0x${string}` | undefined;
-  let evmChainId: number | undefined;
-  let evmConnected = false;
-  let evmDisconnect: (() => void) | undefined;
-  try {
-    const acc = useEvmAccount();
-    evmAddress = acc.address;
-    evmChainId = acc.chainId;
-    evmConnected = acc.isConnected;
-    const dc = useEvmDisconnect();
-    evmDisconnect = dc.disconnect;
-  } catch (e) {
-    // Wagmi provider missing — treat as disconnected. Not fatal.
-  }
+  // EVM stub — always disconnected while EvmProvider is neutered.
+  const evm = {
+    connected: false,
+    address: null as string | null,
+    balance: 0n,
+    chain: null as ChainConfig | null,
+  };
 
-  const evmChain = evmChainId ? getChainByEvmChainId(evmChainId) ?? null : null;
-
-  // Balance via wagmi — reads either native or the configured ERC20 token
-  // for the active chain. Falls back to native when no token is configured.
-  const evmTokenAddress =
-    evmChain?.kind === "evm" ? evmChain.currency.tokenAddress : undefined;
-  let evmBalanceRaw: bigint = 0n;
-  try {
-    const bal = useEvmBalance({
-      address: evmAddress,
-      token: evmTokenAddress,
-      chainId: evmChainId,
-      query: { enabled: !!evmAddress },
-    });
-    evmBalanceRaw = bal.data?.value ?? 0n;
-  } catch {
-    evmBalanceRaw = 0n;
-  }
-
-  // ---------- Track "which did the user pick last" ----------
-  const [lastActive, setLastActive] = useState<WalletKind>("stacks");
-  useEffect(() => {
-    if (stx.connected) setLastActive("stacks");
-  }, [stx.connected, stx.address]);
-  useEffect(() => {
-    if (evmConnected) setLastActive("evm");
-  }, [evmConnected, evmAddress]);
-
-  // ---------- Compose the unified state ----------
   const value = useMemo<WalletContextValue>(() => {
-    const activeIsEvm =
-      lastActive === "evm" && evmConnected
-        ? true
-        : lastActive === "stacks" && stx.connected
-          ? false
-          : evmConnected && !stx.connected;
-
-    const active: Pick<WalletState, "connected" | "address" | "balance" | "kind" | "chain"> =
-      activeIsEvm
-        ? {
-            connected: evmConnected,
-            address: evmAddress ?? null,
-            balance: evmBalanceRaw,
-            kind: "evm",
-            chain: evmChain ?? defaultChain(),
-          }
-        : {
-            connected: stx.connected,
-            address: stx.address,
-            balance: stx.balance,
-            kind: "stacks",
-            chain:
-              CHAINS.find((c) => c.kind === "stacks" && c.enabled) ??
-              defaultChain(),
-          };
+    const stacksChain =
+      CHAINS.find((c) => c.kind === "stacks" && c.enabled) ?? defaultChain();
 
     return {
-      ...active,
+      connected: stx.connected,
+      address: stx.address,
+      balance: stx.balance,
       loading: stx.loading,
-      anyConnected: stx.connected || evmConnected,
+      kind: "stacks",
+      chain: stacksChain,
+      anyConnected: stx.connected,
       stacks: {
         connected: stx.connected,
         address: stx.address,
         balance: stx.balance,
       },
-      evm: {
-        connected: evmConnected,
-        address: evmAddress ?? null,
-        balance: evmBalanceRaw,
-        chain: evmChain,
-      },
+      evm,
       connect,
       disconnect: () => {
-        // Disconnect whichever is currently active. If both are connected,
-        // fall through and disconnect both.
         balanceCache.current.clear();
         try {
           disconnectWallet();
-        } catch {}
-        try {
-          evmDisconnect?.();
         } catch {}
         setStx({
           connected: false,
@@ -264,17 +182,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       },
       refresh,
     };
-  }, [
-    stx,
-    evmConnected,
-    evmAddress,
-    evmBalanceRaw,
-    evmChain,
-    lastActive,
-    connect,
-    refresh,
-    evmDisconnect,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stx, connect, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

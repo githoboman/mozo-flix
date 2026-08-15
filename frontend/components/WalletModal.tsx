@@ -3,13 +3,19 @@
 import { useEffect, useState } from "react";
 import { connectWallet } from "@/lib/stacks";
 import {
-  CHAINS,
   enabledChains,
   WALLET_METADATA,
   type ChainConfig,
   type WalletProviderId,
 } from "@/lib/chains";
-import { useModal as useConnectKitModal } from "connectkit";
+
+/**
+ * NOTE (2026-08-13): ConnectKit imports removed while the EVM wallet
+ * layer is being rebuilt without the Coinbase Base Account connector.
+ * The EVM row below now advertises the roadmap with a "Coming soon"
+ * chip instead of opening a picker. Restore the ConnectKit hook and
+ * the handleEvmConnect handler when EvmProvider is switched back on.
+ */
 
 /**
  * Multi-chain wallet picker. Groups options by chain family (Stacks vs
@@ -31,15 +37,9 @@ export function WalletModal({
   const [currentHref, setCurrentHref] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // ConnectKit's imperative open — safe to call even when no EVM chains
-  // are enabled; the hook returns a no-op that we simply won't wire up.
-  let openConnectKit: () => void = () => {};
-  try {
-    const m = useConnectKitModal();
-    openConnectKit = () => m.setOpen(true);
-  } catch {
-    // wagmi/ConnectKit provider absent — EVM options will just be hidden.
-  }
+  // EVM wallet flow is temporarily offline — see EvmProvider.tsx for the
+  // reason. The EVM group renders as a "Coming soon" chip rather than an
+  // active button so returning testers can see the roadmap.
 
   useEffect(() => {
     if (!open) return;
@@ -56,12 +56,6 @@ export function WalletModal({
   const handleStacksConnect = () => {
     onClose();
     connectWallet(() => onConnected?.());
-  };
-
-  const handleEvmConnect = () => {
-    onClose();
-    openConnectKit();
-    onConnected?.();
   };
 
   const copyLink = async () => {
@@ -129,24 +123,24 @@ export function WalletModal({
           />
         )}
 
-        {/* EVM group — single "Connect EVM wallet" launcher that opens
-            ConnectKit, which then handles the individual wallet picker.
-            We show the token pill + supported chains so it's clear what
-            connecting here means. */}
+        {/* EVM group — placeholder while the wagmi/ConnectKit stack is
+            being rebuilt. Shows the promised chains so testers know
+            what's coming without an active launcher that would fail. */}
         {hasEvm && (
           <div className="mt-5">
             <GroupHeader label="EVM · Base · Celo" />
-            <button
-              type="button"
-              onClick={handleEvmConnect}
-              className="group flex w-full items-center gap-4 rounded-xl border border-accent-border bg-surface px-5 py-4 text-left transition hover:translate-x-1 hover:border-accent/40 hover:bg-accent/5"
-            >
-              <span className="text-2xl">🌐</span>
+            <div className="flex w-full items-center gap-4 rounded-xl border border-white/5 bg-surface/60 px-5 py-4 opacity-70">
+              <span className="text-2xl grayscale">🌐</span>
               <div className="flex-1 min-w-0">
-                <div className="font-ui text-[14px] font-semibold text-white">
-                  MetaMask · Coinbase · WalletConnect
+                <div className="flex items-center gap-2">
+                  <div className="font-ui text-[14px] font-semibold text-white">
+                    MetaMask · Coinbase · WalletConnect
+                  </div>
+                  <span className="rounded-full border border-accent/30 bg-accent-dim px-2 py-0.5 font-ui text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
+                    Coming soon
+                  </span>
                 </div>
-                <div className="text-[11px] font-light text-muted">
+                <div className="mt-1 text-[11px] font-light text-muted">
                   Earn in the token of the chain you&apos;re on
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -155,10 +149,7 @@ export function WalletModal({
                   ))}
                 </div>
               </div>
-              <span className="text-lg text-accent opacity-0 transition group-hover:opacity-100">
-                →
-              </span>
-            </button>
+            </div>
           </div>
         )}
 

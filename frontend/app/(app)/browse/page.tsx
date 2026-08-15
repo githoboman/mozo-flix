@@ -244,16 +244,71 @@ function NoMatch() {
 }
 
 function ErrorCard({ message }: { message: string }) {
+  // Only enrich the card when we can see a resolved network + address on
+  // the client. NEXT_PUBLIC_* are safe to read in the browser bundle.
+  const network =
+    process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet"
+      ? "mainnet"
+      : "testnet";
+  const address =
+    process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
+    "ST9NSDHK5969YF6WJ2MRCVVAVTDENWBNTFJRVZ3E";
+  const explorerAddr = `https://explorer.hiro.so/address/${address}?chain=${network}`;
+  const isResetLikely = /testnet was reset|contracts aren't deployed|NoSuchContract/i.test(
+    message,
+  );
+
   return (
-    <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-8 text-center">
-      <div className="mb-2 font-display text-h2 text-red-300">
-        Couldn&apos;t reach the contract
+    <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-8 text-left">
+      <div className="mb-3 flex items-center gap-3">
+        <span className="material-symbols-outlined text-[24px] text-red-300">
+          {isResetLikely ? "sync_problem" : "cloud_off"}
+        </span>
+        <div className="font-display text-h2 text-red-300">
+          {isResetLikely
+            ? "Contracts not found on chain"
+            : "Couldn't reach the contract"}
+        </div>
       </div>
-      <p className="text-[13px] font-light text-red-200/80">{message}</p>
-      <p className="mt-3 font-mono text-[11px] text-red-200/60">
-        Check that NEXT_PUBLIC_CONTRACT_ADDRESS in .env.local matches your
-        deployer.
+      <p className="mb-4 text-[13px] font-light leading-relaxed text-red-200/85">
+        {message}
       </p>
+
+      <div className="mb-4 rounded-lg border border-red-500/20 bg-red-950/30 p-3 font-mono text-[11px] text-red-200/70">
+        <div>
+          <span className="text-red-200/50">network:</span> {network}
+        </div>
+        <div>
+          <span className="text-red-200/50">deployer:</span> {address}
+        </div>
+      </div>
+
+      {isResetLikely ? (
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={explorerAddr}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded bg-accent px-3 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black transition hover:bg-accent-bright"
+          >
+            Check on explorer →
+          </a>
+          <a
+            href="https://github.com/githoboman/mozo-flix/blob/main/contracts/DEPLOY.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded border border-red-500/40 px-3 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-red-200 transition hover:border-red-400 hover:text-red-100"
+          >
+            Redeploy guide
+          </a>
+        </div>
+      ) : (
+        <p className="font-mono text-[11px] text-red-200/60">
+          Check that NEXT_PUBLIC_CONTRACT_ADDRESS in your environment matches
+          the live deployer, and that NEXT_PUBLIC_STACKS_NETWORK is set
+          correctly.
+        </p>
+      )}
     </div>
   );
 }
