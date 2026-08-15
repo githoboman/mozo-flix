@@ -168,12 +168,21 @@ export function LiveCampaignsTable({
     <div className="mt-10 rounded-2xl border border-accent-border bg-card">
       <div className="flex items-center justify-between border-b border-white/5 px-5 py-5 md:px-8 md:py-6">
         <h2 className="font-display text-h2">Your Campaigns</h2>
-        <Link
-          href="/upload"
-          className="rounded bg-accent px-5 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black hover:bg-accent-bright"
-        >
-          + New Campaign
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/studio/restore"
+            title="Recover videos after a testnet reset"
+            className="rounded border border-accent/30 px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-accent hover:border-accent hover:bg-accent/10"
+          >
+            ↻ Restore
+          </Link>
+          <Link
+            href="/upload"
+            className="rounded bg-accent px-5 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-black hover:bg-accent-bright"
+          >
+            + New Campaign
+          </Link>
+        </div>
       </div>
 
       {campaigns === null ? (
