@@ -54,16 +54,31 @@ export async function pinJsonToIPFS(
   payload: unknown,
   name = "metadata.json",
 ): Promise<{ cid: string }> {
-  const res = await fetch(`${PINATA_API}/pinning/pinJSONToIPFS`, {
+  // We use pinFileToIPFS (with the JSON serialized as a file body) instead
+  // of pinJSONToIPFS. Reason: pinJSONToIPFS requires a specific admin/scoped
+  // permission that the Pinata UI silently strips from many "admin" keys,
+  // producing intermittent 403s. pinFileToIPFS is available to every key
+  // that has any pin scope at all — including the same one our video
+  // upload flow already uses — so we get one code path and no scope
+  // gotchas. The pinned CID is byte-identical either way.
+  const jsonBlob = new Blob([JSON.stringify(payload)], {
+    type: "application/json",
+  });
+  const form = new FormData();
+  form.append("file", jsonBlob, name);
+  form.append(
+    "pinataMetadata",
+    JSON.stringify({ name, keyvalues: { kind: "manifest" } }),
+  );
+
+  const res = await fetch(`${PINATA_API}/pinning/pinFileToIPFS`, {
     method: "POST",
     headers: {
+      // NOTE: do NOT set Content-Type — the runtime auto-sets it with the
+      // multipart boundary. Setting it manually breaks the upload.
       Authorization: `Bearer ${getJwt()}`,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      pinataMetadata: { name },
-      pinataContent: payload,
-    }),
+    body: form,
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
