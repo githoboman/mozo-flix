@@ -12,7 +12,7 @@ const SOCIALS = [
 export function ShareModal({
   open,
   onClose,
-  url = "https://mozoflix.io/watch/1",
+  url = "https://mozoflix.com/watch/1",
 }: {
   open: boolean;
   onClose: () => void;

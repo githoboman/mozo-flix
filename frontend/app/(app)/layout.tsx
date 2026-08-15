@@ -1,5 +1,6 @@
 import { DataProvider } from "@/lib/DataProvider";
 import { WalletProvider } from "@/lib/useWallet";
+import { EvmProvider } from "@/lib/EvmProvider";
 import { TopNav } from "@/components/TopNav";
 
 /**
@@ -21,11 +22,13 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <WalletProvider>
-      <DataProvider>
-        <TopNav />
-        {children}
-      </DataProvider>
-    </WalletProvider>
+    <EvmProvider>
+      <WalletProvider>
+        <DataProvider>
+          <TopNav />
+          {children}
+        </DataProvider>
+      </WalletProvider>
+    </EvmProvider>
   );
 }

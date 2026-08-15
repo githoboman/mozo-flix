@@ -26,6 +26,12 @@ export const metadata: Metadata = {
   title: "MOZOflix — Watch. Earn. Own.",
   description:
     "The first decentralised watch-to-earn video platform on Stacks. Your attention has value — it's time you got paid for it.",
+  // Site-verification tags. `other` renders as raw <meta name="..." content="..." />
+  // in the document head. Keep entries here rather than sprinkled through
+  // components so the head stays predictable.
+  other: {
+    "ory-verify": "orynth-e8dc7b27439948e98a9f66626f9c5976",
+  },
 };
 
 export default function RootLayout({

@@ -2,65 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { connectWallet } from "@/lib/stacks";
-
-type WalletOption = {
-  name: string;
-  icon: string;
-  description: string;
-  /** Deep-link that opens the current site inside the wallet's in-app browser. Used only on mobile. */
-  mobileOpenUrl?: (currentHref: string) => string;
-  /** Where to download the wallet if the user doesn't have it. */
-  installUrl: string;
-};
-
-const WALLETS: WalletOption[] = [
-  {
-    name: "Xverse",
-    icon: "🔵",
-    description: "Mobile & browser · BTC, STX, Ordinals",
-    mobileOpenUrl: (href) =>
-      `https://connect.xverse.app/browser?url=${encodeURIComponent(href)}`,
-    installUrl: "https://www.xverse.app/download",
-  },
-  {
-    name: "Leather Wallet",
-    icon: "🟤",
-    description: "Browser extension · Bitcoin & Stacks",
-    installUrl: "https://leather.io/install-extension",
-  },
-  {
-    name: "Boom Wallet",
-    icon: "💥",
-    description: "Web wallet · Fast Stacks onboarding",
-    installUrl: "https://www.boomwallet.app/",
-  },
-];
+import {
+  CHAINS,
+  enabledChains,
+  WALLET_METADATA,
+  type ChainConfig,
+  type WalletProviderId,
+} from "@/lib/chains";
+import { useModal as useConnectKitModal } from "connectkit";
 
 /**
- * True when we're in a mobile browser context where injected browser-extension
- * wallets don't exist. We check `pointer: coarse` (touch-first devices) and
- * fall back to a UA sniff for older WebViews. This is deliberately generous —
- * false positives here just mean we show extra help; false negatives mean the
- * user hits a dead "Connect" button.
+ * Multi-chain wallet picker. Groups options by chain family (Stacks vs
+ * EVM) and — critically — surfaces the token the viewer will earn in
+ * for each choice. That's the single most important signal on this
+ * modal now that connecting different wallets means earning different
+ * currencies.
  */
-function detectMobileWithoutWallet(): boolean {
-  if (typeof window === "undefined") return false;
-  const hasLeather = "LeatherProvider" in window;
-  const hasXverse =
-    "XverseProviders" in window ||
-    // Some Xverse builds inject StacksProvider directly
-    "StacksProvider" in window;
-  if (hasLeather || hasXverse) return false;
-
-  const isCoarse =
-    window.matchMedia?.("(pointer: coarse)").matches ?? false;
-  const isNarrow = window.innerWidth < 900;
-  const uaMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(
-    navigator.userAgent,
-  );
-  return (isCoarse || uaMobile) && isNarrow;
-}
-
 export function WalletModal({
   open,
   onClose,
@@ -74,6 +31,16 @@ export function WalletModal({
   const [currentHref, setCurrentHref] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // ConnectKit's imperative open — safe to call even when no EVM chains
+  // are enabled; the hook returns a no-op that we simply won't wire up.
+  let openConnectKit: () => void = () => {};
+  try {
+    const m = useConnectKitModal();
+    openConnectKit = () => m.setOpen(true);
+  } catch {
+    // wagmi/ConnectKit provider absent — EVM options will just be hidden.
+  }
+
   useEffect(() => {
     if (!open) return;
     setMobileNoWallet(detectMobileWithoutWallet());
@@ -86,11 +53,15 @@ export function WalletModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const handleConnect = () => {
+  const handleStacksConnect = () => {
     onClose();
-    connectWallet(() => {
-      onConnected?.();
-    });
+    connectWallet(() => onConnected?.());
+  };
+
+  const handleEvmConnect = () => {
+    onClose();
+    openConnectKit();
+    onConnected?.();
   };
 
   const copyLink = async () => {
@@ -99,10 +70,14 @@ export function WalletModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Some in-app browsers block clipboard — fall back to prompt
       window.prompt("Copy this URL", currentHref);
     }
   };
+
+  const chainsToShow = enabledChains();
+  const stacksChain = chainsToShow.find((c) => c.kind === "stacks");
+  const evmChains = chainsToShow.filter((c) => c.kind === "evm");
+  const hasEvm = evmChains.length > 0;
 
   return (
     <div
@@ -112,7 +87,7 @@ export function WalletModal({
       }`}
     >
       <div
-        className={`relative max-h-[92vh] w-[440px] max-w-[92vw] overflow-y-auto rounded-2xl border border-accent/25 bg-card p-6 sm:p-10 transition-transform duration-300 ${
+        className={`relative max-h-[92vh] w-[480px] max-w-[92vw] overflow-y-auto rounded-2xl border border-accent/25 bg-card p-6 sm:p-9 transition-transform duration-300 ${
           open ? "scale-100 translate-y-0" : "scale-90 translate-y-5"
         }`}
       >
@@ -126,96 +101,66 @@ export function WalletModal({
         </button>
 
         <div className="mb-1 font-ui text-[10px] uppercase tracking-[0.2em] text-accent">
-          Stacks Wallet
+          Connect Wallet
         </div>
-        <div className="mb-2 font-display text-[32px] tracking-[0.03em]">
-          CONNECT WALLET
+        <div className="mb-2 font-display text-[28px] leading-[1.05] tracking-[0.03em]">
+          Pick your rails.
         </div>
-        <p className="mb-6 text-[13px] font-light text-muted">
-          No email. No password. Your wallet is your identity — and your reward
-          destination.
+        <p className="mb-6 text-[13px] font-light leading-relaxed text-muted">
+          The wallet you connect decides what token you earn in. Every wallet
+          is non-custodial — MOZOflix never holds your keys.
         </p>
 
         {mobileNoWallet && (
-          <div className="mb-5 rounded-xl border border-accent/30 bg-accent-dim/40 p-4">
-            <div className="mb-2 flex items-center gap-2 font-ui text-[10px] font-bold uppercase tracking-[0.15em] text-accent">
-              <span className="material-symbols-outlined text-[16px]">
-                phone_iphone
-              </span>
-              Mobile detected
-            </div>
-            <p className="mb-3 text-[12px] font-light leading-relaxed text-white/85">
-              Wallet extensions only work in desktop browsers. On mobile,
-              open this page inside your wallet app&apos;s built-in browser
-              to connect.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={
-                  WALLETS[0]!.mobileOpenUrl?.(currentHref) ??
-                  WALLETS[0]!.installUrl
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded bg-accent px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.1em] text-black transition hover:bg-accent-bright"
-              >
-                Open in Xverse
-              </a>
-              <button
-                type="button"
-                onClick={copyLink}
-                className="rounded border border-white/15 px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-accent hover:text-accent"
-              >
-                {copied ? "✓ Copied" : "Copy link"}
-              </button>
-            </div>
-            <p className="mt-3 text-[10px] font-light text-muted">
-              Don&apos;t have a wallet? Install{" "}
-              <a
-                href="https://www.xverse.app/download"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline"
-              >
-                Xverse
-              </a>{" "}
-              or{" "}
-              <a
-                href="https://leather.io/install-mobile-app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline"
-              >
-                Leather mobile
-              </a>{" "}
-              first.
-            </p>
-          </div>
+          <MobilePrompt
+            currentHref={currentHref}
+            copied={copied}
+            onCopy={copyLink}
+          />
         )}
 
-        <div className="flex flex-col gap-2.5">
-          {WALLETS.map((w) => (
+        {/* Stacks group */}
+        {stacksChain && (
+          <ChainGroup
+            title="Bitcoin-secured · Stacks"
+            chain={stacksChain}
+            wallets={stacksChain.wallets}
+            onSelect={handleStacksConnect}
+          />
+        )}
+
+        {/* EVM group — single "Connect EVM wallet" launcher that opens
+            ConnectKit, which then handles the individual wallet picker.
+            We show the token pill + supported chains so it's clear what
+            connecting here means. */}
+        {hasEvm && (
+          <div className="mt-5">
+            <GroupHeader label="EVM · Base · Celo" />
             <button
               type="button"
-              key={w.name}
-              onClick={handleConnect}
-              className="group flex items-center gap-4 rounded-xl border border-accent-border bg-surface px-5 py-4 text-left transition hover:translate-x-1 hover:border-accent/40 hover:bg-accent/5"
+              onClick={handleEvmConnect}
+              className="group flex w-full items-center gap-4 rounded-xl border border-accent-border bg-surface px-5 py-4 text-left transition hover:translate-x-1 hover:border-accent/40 hover:bg-accent/5"
             >
-              <span className="text-2xl">{w.icon}</span>
-              <div className="flex-1">
+              <span className="text-2xl">🌐</span>
+              <div className="flex-1 min-w-0">
                 <div className="font-ui text-[14px] font-semibold text-white">
-                  {w.name}
+                  MetaMask · Coinbase · WalletConnect
                 </div>
                 <div className="text-[11px] font-light text-muted">
-                  {w.description}
+                  Earn in the token of the chain you&apos;re on
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {evmChains.map((c) => (
+                    <EarnPill key={c.id} chain={c} />
+                  ))}
                 </div>
               </div>
               <span className="text-lg text-accent opacity-0 transition group-hover:opacity-100">
                 →
               </span>
             </button>
-          ))}
-        </div>
+          </div>
+        )}
 
         {!mobileNoWallet && (
           <p className="mt-6 text-center text-[11px] font-light text-muted">
@@ -226,11 +171,157 @@ export function WalletModal({
               rel="noopener noreferrer"
               className="text-accent hover:underline"
             >
-              Get Leather free →
+              Leather (Stacks)
             </a>
+            {hasEvm && (
+              <>
+                {" · "}
+                <a
+                  href="https://metamask.io/download/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  MetaMask (EVM)
+                </a>
+              </>
+            )}
           </p>
         )}
       </div>
     </div>
   );
+}
+
+function GroupHeader({ label }: { label: string }) {
+  return (
+    <div className="mb-2 flex items-center gap-2.5 font-ui text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
+      <span aria-hidden className="block h-0.5 w-6 bg-accent" />
+      {label}
+    </div>
+  );
+}
+
+function ChainGroup({
+  title,
+  chain,
+  wallets,
+  onSelect,
+}: {
+  title: string;
+  chain: ChainConfig;
+  wallets: WalletProviderId[];
+  onSelect: () => void;
+}) {
+  return (
+    <div>
+      <GroupHeader label={title} />
+      <div className="mb-3 flex items-center gap-2">
+        <EarnPill chain={chain} />
+      </div>
+      <div className="flex flex-col gap-2.5">
+        {wallets.map((id) => {
+          const meta = WALLET_METADATA[id];
+          return (
+            <button
+              type="button"
+              key={id}
+              onClick={onSelect}
+              className="group flex items-center gap-4 rounded-xl border border-accent-border bg-surface px-5 py-4 text-left transition hover:translate-x-1 hover:border-accent/40 hover:bg-accent/5"
+            >
+              <span className="text-2xl">{meta.icon}</span>
+              <div className="flex-1">
+                <div className="font-ui text-[14px] font-semibold text-white">
+                  {meta.name}
+                </div>
+                <div className="text-[11px] font-light text-muted">
+                  Earn in {chain.currency.symbol} on {chain.displayName}
+                </div>
+              </div>
+              <span className="text-lg text-accent opacity-0 transition group-hover:opacity-100">
+                →
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function EarnPill({ chain }: { chain: ChainConfig }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent-dim px-2.5 py-0.5 font-ui text-[10px] font-bold uppercase tracking-[0.12em] text-accent">
+      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" />
+      {chain.currency.symbol} · {chain.displayName}
+    </span>
+  );
+}
+
+function MobilePrompt({
+  currentHref,
+  copied,
+  onCopy,
+}: {
+  currentHref: string;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="mb-5 rounded-xl border border-accent/30 bg-accent-dim/40 p-4">
+      <div className="mb-2 flex items-center gap-2 font-ui text-[10px] font-bold uppercase tracking-[0.15em] text-accent">
+        <span className="material-symbols-outlined text-[16px]">
+          phone_iphone
+        </span>
+        Mobile detected
+      </div>
+      <p className="mb-3 text-[12px] font-light leading-relaxed text-white/85">
+        Extensions don&apos;t work in mobile browsers. Open this page inside
+        your wallet app&apos;s built-in browser.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <a
+          href={`https://connect.xverse.app/browser?url=${encodeURIComponent(
+            currentHref,
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded bg-accent px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.1em] text-black transition hover:bg-accent-bright"
+        >
+          Open in Xverse
+        </a>
+        <a
+          href={`https://metamask.app.link/dapp/${currentHref.replace(/^https?:\/\//, "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded border border-white/15 px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-accent hover:text-accent"
+        >
+          Open in MetaMask
+        </a>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="rounded border border-white/15 px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-accent hover:text-accent"
+        >
+          {copied ? "✓ Copied" : "Copy link"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function detectMobileWithoutWallet(): boolean {
+  if (typeof window === "undefined") return false;
+  const hasLeather = "LeatherProvider" in window;
+  const hasXverse =
+    "XverseProviders" in window || "StacksProvider" in window;
+  const hasEthProvider = "ethereum" in window;
+  if (hasLeather || hasXverse || hasEthProvider) return false;
+
+  const isCoarse = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+  const isNarrow = window.innerWidth < 900;
+  const uaMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(
+    navigator.userAgent,
+  );
+  return (isCoarse || uaMobile) && isNarrow;
 }

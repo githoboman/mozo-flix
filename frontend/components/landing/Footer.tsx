@@ -9,7 +9,7 @@ export function LandingFooter() {
       </div>
       <div className="flex gap-6">
         {[
-          { label: "Docs", href: "https://docs.mozoflix.io" },
+          { label: "Docs", href: "/docs" },
           { label: "GitHub", href: "https://github.com/mozoflix" },
           { label: "Twitter", href: "https://twitter.com/MOZOflix" },
           { label: "Discord", href: "https://discord.gg/mozoflix" },
