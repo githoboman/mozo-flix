@@ -1,29 +1,33 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { baseSepolia, base, celo, celoAlfajores } from "wagmi/chains";
+import { injected, walletConnect } from "wagmi/connectors";
 
-/**
- * lib/EvmProvider.tsx
- *
- * TEMPORARILY DISABLED (2026-08-13).
- *
- * ConnectKit's `getDefaultConfig` transitively loads @wagmi/connectors →
- * @base-org/account → @coinbase/cdp-sdk, which references half a dozen
- * `@x402/*` packages that aren't published as separate npm modules. Every
- * webpack fallback we add uncovers another missing path, and the build
- * keeps failing on Vercel — which was blocking the Orynth ownership
- * verification for mozoflix.com.
- *
- * This file was originally a full wagmi + ConnectKit provider (see the
- * git history) and will be restored when we bring EVM support back with
- * a leaner connector setup — manual `injected()` + `walletConnect()`
- * only, no Coinbase/Base Account, no CDP SDK. The chain registry, the
- * Solidity contract, and the deploy plan are all still in place; only
- * the client-side EVM wallet layer is switched off.
- *
- * While disabled, this component is a plain pass-through so `(app)/layout`
- * can keep importing it unchanged.
- */
+const queryClient = new QueryClient();
+
+const config = createConfig({
+  chains: [baseSepolia, base, celoAlfajores, celo],
+  connectors: [
+    injected(),
+    walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "demo" }),
+  ],
+  transports: {
+    [baseSepolia.id]: http(),
+    [base.id]: http(),
+    [celoAlfajores.id]: http(),
+    [celo.id]: http(),
+  },
+});
+
 export function EvmProvider({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
 }

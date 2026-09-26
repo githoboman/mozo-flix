@@ -12,25 +12,19 @@
  * as we grow.
  */
 
-export type ChainKind = "stacks" | "evm";
+export type ChainKind = "stacks" | "evm" | "solana";
 
 export type StacksChainConfig = {
   id: "stacks-mainnet" | "stacks-testnet";
   kind: "stacks";
   displayName: string;
   currency: {
-    /** Human-readable label, e.g. "STX". */
     symbol: string;
-    /** Number of decimals for display formatting. */
     decimals: number;
   };
-  /** Deployer / contract-owner address. Used to build fully-qualified contract IDs. */
   contractOwner: string;
-  /** Hiro explorer base URL. */
   explorerBase: string;
-  /** Marker used for enabling/disabling a chain from the UI without deleting its config. */
   enabled: boolean;
-  /** Which wallets the Wallet Modal should surface for this chain. */
   wallets: WalletProviderId[];
 };
 
@@ -38,18 +32,12 @@ export type EvmChainConfig = {
   id: "base-sepolia" | "base-mainnet" | "celo-alfajores" | "celo-mainnet";
   kind: "evm";
   displayName: string;
-  /** EIP-155 chain id, e.g. Base Sepolia is 84532. */
   chainId: number;
   currency: {
     symbol: string;
     decimals: number;
-    /**
-     * If the reward token is an ERC20 (USDC etc.), its contract address.
-     * When undefined we treat the chain's native coin as the reward token.
-     */
     tokenAddress?: `0x${string}`;
   };
-  /** Address of the MozoflixRewards contract on this chain (empty until deployed). */
   rewardsContract?: `0x${string}`;
   rpcUrl: string;
   explorerBase: string;
@@ -57,20 +45,33 @@ export type EvmChainConfig = {
   wallets: WalletProviderId[];
 };
 
-export type ChainConfig = StacksChainConfig | EvmChainConfig;
+export type SolanaChainConfig = {
+  id: "solana-mainnet" | "solana-devnet";
+  kind: "solana";
+  displayName: string;
+  currency: {
+    symbol: string;
+    decimals: number;
+    mintAddress?: string;
+  };
+  programId: string;
+  rpcUrl: string;
+  explorerBase: string;
+  enabled: boolean;
+  wallets: WalletProviderId[];
+};
 
-/**
- * Wallet providers known to the UI. When a wallet ships that we don't
- * know about, add it here and to WALLET_METADATA below — the modal
- * layer picks it up automatically.
- */
+export type ChainConfig = StacksChainConfig | EvmChainConfig | SolanaChainConfig;
+
 export type WalletProviderId =
   | "leather"
   | "xverse"
   | "metamask"
   | "coinbase-wallet"
   | "walletconnect"
-  | "valora";
+  | "valora"
+  | "phantom"
+  | "solflare";
 
 export const WALLET_METADATA: Record<
   WalletProviderId,
@@ -112,6 +113,18 @@ export const WALLET_METADATA: Record<
     installUrl: "https://valora.xyz/",
     kind: "evm",
   },
+  phantom: {
+    name: "Phantom",
+    icon: "👻",
+    installUrl: "https://phantom.app/",
+    kind: "solana",
+  },
+  solflare: {
+    name: "Solflare",
+    icon: "☀️",
+    installUrl: "https://solflare.com/",
+    kind: "solana",
+  },
 };
 
 const STACKS_CONTRACT_OWNER =
@@ -121,6 +134,19 @@ const STACKS_CONTRACT_OWNER =
 const isStacksMainnet = process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet";
 
 export const CHAINS: ChainConfig[] = [
+  // ---------- Solana ----------
+  {
+    id: "solana-devnet",
+    kind: "solana",
+    displayName: "Solana Devnet",
+    currency: { symbol: "SOL", decimals: 9 },
+    programId: "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+    rpcUrl: "https://api.devnet.solana.com",
+    explorerBase: "https://explorer.solana.com/?cluster=devnet",
+    enabled: true,
+    wallets: ["phantom", "solflare"],
+  },
+
   // ---------- Stacks ----------
   {
     id: isStacksMainnet ? "stacks-mainnet" : "stacks-testnet",

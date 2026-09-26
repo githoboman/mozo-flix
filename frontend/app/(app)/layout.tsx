@@ -1,6 +1,7 @@
 import { DataProvider } from "@/lib/DataProvider";
 import { WalletProvider } from "@/lib/useWallet";
 import { EvmProvider } from "@/lib/EvmProvider";
+import { SolanaProvider } from "@/lib/SolanaProvider";
 import { TopNav } from "@/components/TopNav";
 
 /**
@@ -22,13 +23,15 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <EvmProvider>
-      <WalletProvider>
-        <DataProvider>
-          <TopNav />
-          {children}
-        </DataProvider>
-      </WalletProvider>
-    </EvmProvider>
+    <SolanaProvider>
+      <EvmProvider>
+        <WalletProvider>
+          <DataProvider>
+            <TopNav />
+            {children}
+          </DataProvider>
+        </WalletProvider>
+      </EvmProvider>
+    </SolanaProvider>
   );
 }

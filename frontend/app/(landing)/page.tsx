@@ -4,7 +4,7 @@ import { LandingHow } from "@/components/landing/How";
 import { LandingAI } from "@/components/landing/AI";
 import { LandingVideoSlider } from "@/components/landing/VideoSlider";
 import { LandingEarn } from "@/components/landing/Earn";
-import { LandingStacks } from "@/components/landing/Stacks";
+import { LandingMultiChain } from "@/components/landing/MultiChain";
 import { LandingCTA } from "@/components/landing/CTA";
 import { LandingFooter } from "@/components/landing/Footer";
 import { Ticker } from "@/components/landing/Ticker";
@@ -30,7 +30,7 @@ export default function Home() {
           <LandingEarn />
         </ScrollReveal>
         <ScrollReveal>
-          <LandingStacks />
+          <LandingMultiChain />
         </ScrollReveal>
         <ScrollReveal>
           <LandingCTA />

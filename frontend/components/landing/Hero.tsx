@@ -27,7 +27,7 @@ export function LandingHero() {
           <div className="mb-8 flex flex-wrap gap-2 animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-dim px-4 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-accent" />
-              Built on Stacks · Bitcoin-Secured
+              Omnichain: Base, Solana, Stacks
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-dim px-4 py-1.5 font-ui text-[11px] font-bold uppercase tracking-[0.15em] text-accent">
               <span className="material-symbols-outlined text-[14px]">

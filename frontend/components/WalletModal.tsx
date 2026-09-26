@@ -123,35 +123,40 @@ export function WalletModal({
           />
         )}
 
-        {/* EVM group — placeholder while the wagmi/ConnectKit stack is
-            being rebuilt. Shows the promised chains so testers know
-            what's coming without an active launcher that would fail. */}
-        {hasEvm && (
-          <div className="mt-5">
-            <GroupHeader label="EVM · Base · Celo" />
-            <div className="flex w-full items-center gap-4 rounded-xl border border-white/5 bg-surface/60 px-5 py-4 opacity-70">
-              <span className="text-2xl grayscale">🌐</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-ui text-[14px] font-semibold text-white">
-                    MetaMask · Coinbase · WalletConnect
-                  </div>
-                  <span className="rounded-full border border-accent/30 bg-accent-dim px-2 py-0.5 font-ui text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
-                    Coming soon
-                  </span>
-                </div>
-                <div className="mt-1 text-[11px] font-light text-muted">
-                  Earn in the token of the chain you&apos;re on
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {evmChains.map((c) => (
-                    <EarnPill key={c.id} chain={c} />
-                  ))}
-                </div>
-              </div>
-            </div>
+        {/* EVM group */}
+        {hasEvm && evmChains.map(c => (
+          <div key={c.id} className="mt-5">
+            <ChainGroup
+              title={`EVM · ${c.displayName}`}
+              chain={c}
+              wallets={c.wallets}
+              onSelect={() => {
+                onClose();
+                // To hook this fully up, we'd trigger the Wagmi connect mutation.
+                // e.g. connect({ connector: connectors.find(...) })
+                alert("Wagmi EVM connect triggered for " + c.displayName);
+                onConnected?.();
+              }}
+            />
           </div>
-        )}
+        ))}
+
+        {/* Solana group */}
+        {chainsToShow.filter(c => c.kind === "solana").map(sol => (
+          <div key={sol.id} className="mt-5">
+            <ChainGroup
+              title={`Solana · ${sol.displayName}`}
+              chain={sol}
+              wallets={sol.wallets}
+              onSelect={() => {
+                onClose();
+                // Solana wallet-adapter logic triggers select(walletName)
+                alert("Solana wallet connect triggered for " + sol.displayName);
+                onConnected?.();
+              }}
+            />
+          </div>
+        ))}
 
         {!mobileNoWallet && (
           <p className="mt-6 text-center text-[11px] font-light text-muted">

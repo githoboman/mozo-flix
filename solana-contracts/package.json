@@ -1,0 +1,1 @@
+{ "name": "solana-contracts", "version": "0.1.0", "dependencies": { "@coral-xyz/anchor": "^0.29.0" } }
